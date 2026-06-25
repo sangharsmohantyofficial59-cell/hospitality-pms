@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --theme-bg: #f8fafc; /* slate-50 */
+  --theme-surf: #ffffff; /* white */
+  --theme-text: #0f172a; /* slate-900 */
+  --theme-text-muted: #64748b; /* slate-500 */
+  --theme-border: #f1f5f9; /* slate-100 */
+  --header-bg: rgba(255, 255, 255, 0.95);
+}
+
+.dark {
+  --theme-bg: #0b0f19; /* dark blue-gray */
+  --theme-surf: #111827; /* gray-900 */
+  --theme-text: #f8fafc; /* slate-50 */
+  --theme-text-muted: #94a3b8; /* slate-400 */
+  --theme-border: #1f2937; /* gray-800 */
+  --header-bg: rgba(17, 24, 39, 0.95);
+}
+
+/* Attach root background and text colors to the standard document root */
+html, body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease-out, border-color 0.2s ease;
+}
+
+/* Dynamic container presets for cards and fields */
+.theme-card {
+  background-color: var(--theme-surf);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+.theme-text-muted {
+  color: var(--theme-text-muted);
+}
+

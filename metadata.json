@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: Hospitality Template Engine v1",
+  "description": "A comprehensive full-stack Property Management System (PMS) and customer booking engine for a 30-room hotel in Puri, Odisha, themed around coastal luxury, spiritual heritage of Shree Jagannath, and local beach tourism with automatic messaging dispatches.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
