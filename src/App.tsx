@@ -31,7 +31,7 @@ import { Room, RoomStatus, Booking, Guest, Payment, Notification, UploadedDocume
 import { Hotel, KeyRound, ArrowRight, Library, RefreshCw, X, FolderGit, Layout, Database, Bell, Check } from "lucide-react";
 import { api } from "./services/api";
 import { AUTH_CONFIG, type AuthRole } from "./config/authConfig";
-
+import { ROUTES, STAFF_SESSION_KEYS, USER_ROLES, STAFF_TAB_IDS } from "./config/constants";
 
 export default function App() {
   const DEV_MODE = false;
@@ -67,13 +67,15 @@ export default function App() {
     owner: "/owner",
   } as const;
 
+
   type StoredStaffSession = {
     isLoggedIn: true;
     username: string;
     role: keyof typeof ROLE_ROUTES;
   };
 
-  const SESSION_KEY = "pms_staff_session";
+  const SESSION_KEY = STAFF_SESSION_KEYS.storageKey;
+
 
   const getStoredSession = (): StoredStaffSession | null => {
     try {

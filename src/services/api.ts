@@ -33,61 +33,75 @@ async function putJson<T>(url: string, body: unknown, init?: RequestInit): Promi
 export const api = {
   system: {
     getState: async () => {
-      const res = await fetch("/api/pms/state");
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/state`;
+      const res = await fetch(url);
       return handleJson<any>(res);
     },
     refreshState: async () => {
-      const res = await fetch("/api/pms/state");
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/state`;
+      const res = await fetch(url);
       return handleJson<any>(res);
     },
     resetPMS: async () => {
-      return postJson<any>("/api/pms/reset", {}, { method: "POST" });
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/reset`;
+      return postJson<any>(url, {}, { method: "POST" });
     },
     markNotificationsRead: async () => {
-      const res = await fetch("/api/pms/notifications/read", { method: "POST" });
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/notifications/read`;
+      const res = await fetch(url, { method: "POST" });
       return handleJson<any>(res);
     },
   },
 
   booking: {
     createBooking: async (formData: any) => {
-      return postJson<any>("/api/pms/bookings", formData);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/bookings`;
+      return postJson<any>(url, formData);
     },
     updateBooking: async (id: string, payload: any) => {
-      return putJson<any>(`/api/pms/bookings/${id}`, payload);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/bookings/${id}`;
+      return putJson<any>(url, payload);
     },
   },
 
   room: {
     updateRoomStatus: async (id: string, status: any) => {
-      return putJson<any>(`/api/pms/rooms/${id}`, { status });
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/rooms/${id}`;
+      return putJson<any>(url, { status });
     },
   },
 
   checkin: {
     uploadCheckin: async (bookingId: string, payload: any) => {
-      return postJson<any>(`/api/pms/checkin/${bookingId}`, payload);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/checkin/${bookingId}`;
+      return postJson<any>(url, payload);
     },
     upgradeRoom: async (bookingId: string, payload: any) => {
-      return postJson<any>(`/api/pms/upgrade/${bookingId}`, payload);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/upgrade/${bookingId}`;
+      return postJson<any>(url, payload);
     },
   },
 
   guest: {
     addServiceRequest: async (payload: any) => {
-      return postJson<any>("/api/pms/service-requests", payload);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/service-requests`;
+      return postJson<any>(url, payload);
     },
     updateServiceRequest: async (id: string, payload: any) => {
-      return putJson<any>(`/api/pms/service-requests/${id}`, payload);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/service-requests/${id}`;
+      return putJson<any>(url, payload);
     },
     addTourismInquiry: async (payload: any) => {
-      return postJson<any>("/api/pms/tourism-inquiries", payload);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/tourism-inquiries`;
+      return postJson<any>(url, payload);
     },
     addFeedback: async (payload: any) => {
-      return postJson<any>("/api/pms/feedbacks", payload);
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/feedbacks`;
+      return postJson<any>(url, payload);
     },
     updateFeedbackStatus: async (id: string, status: string) => {
-      return putJson<any>(`/api/pms/feedbacks/${id}`, { serviceRecoveryStatus: status });
+      const url = `${(import.meta as any).env?.VITE_API_BASE_URL ?? ""}/api/pms/feedbacks/${id}`;
+      return putJson<any>(url, { serviceRecoveryStatus: status });
     },
   },
 };
