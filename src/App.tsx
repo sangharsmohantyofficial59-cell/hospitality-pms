@@ -29,8 +29,13 @@ import HousekeepingManagement from "./components/HousekeepingManagement";
 import LiveServiceCenter from "./components/LiveServiceCenter";
 import { Room, RoomStatus, Booking, Guest, Payment, Notification, UploadedDocument, RoomType } from "./types";
 import { Hotel, KeyRound, ArrowRight, Library, RefreshCw, X, FolderGit, Layout, Database, Bell, Check } from "lucide-react";
+import { api } from "./services/api";
+import { AUTH_CONFIG, type AuthRole } from "./config/authConfig";
+
 
 export default function App() {
+  const DEV_MODE = false;
+
   // Subdomain & Path routing states
   const [route, setRoute] = useState<string>(() => {
     const hostname = window.location.hostname;
@@ -56,6 +61,32 @@ export default function App() {
   const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(false);
   const [staffUser, setStaffUser] = useState<any>(null);
   const [showStaffLogin, setShowStaffLogin] = useState(false);
+
+  const ROLE_ROUTES = {
+    reception: "/ops",
+    owner: "/owner",
+  } as const;
+
+  type StoredStaffSession = {
+    isLoggedIn: true;
+    username: string;
+    role: keyof typeof ROLE_ROUTES;
+  };
+
+  const SESSION_KEY = "pms_staff_session";
+
+  const getStoredSession = (): StoredStaffSession | null => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as StoredStaffSession;
+      if (parsed?.isLoggedIn && parsed?.username && parsed?.role) return parsed;
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const [preselectedBookingId, setPreselectedBookingId] = useState("");
 
   // Developer Guides state
@@ -105,22 +136,19 @@ export default function App() {
   // Fetch full hotel state on mount
   const fetchState = async () => {
     try {
-      const res = await fetch("/api/pms/state");
-      if (res.ok) {
-        const data = await res.json();
-        setRooms(data.rooms || []);
-        setRoomTypes(data.roomTypes || []);
-        setGuests(data.guests || []);
-        setBookings(data.bookings || []);
-        setPayments(data.payments || []);
-        setNotifications(data.notifications || []);
-        setDocuments(data.documents || []);
-        setMessageLogs(data.messageLogs || []);
-        setActivityLogs(data.activityLogs || []);
-        setServiceRequests(data.serviceRequests || []);
-        setTourismInquiries(data.tourismInquiries || []);
-        setFeedbacks(data.feedbacks || []);
-      }
+      const data = await api.system.getState();
+      setRooms(data.rooms || []);
+      setRoomTypes(data.roomTypes || []);
+      setGuests(data.guests || []);
+      setBookings(data.bookings || []);
+      setPayments(data.payments || []);
+      setNotifications(data.notifications || []);
+      setDocuments(data.documents || []);
+      setMessageLogs(data.messageLogs || []);
+      setActivityLogs(data.activityLogs || []);
+      setServiceRequests(data.serviceRequests || []);
+      setTourismInquiries(data.tourismInquiries || []);
+      setFeedbacks(data.feedbacks || []);
     } catch (err) {
       console.error("Connect error in fetching state:", err);
     } finally {
@@ -129,27 +157,26 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Load full hotel state only once on app start.
     fetchState();
-    const interval = setInterval(() => {
-      fetchState();
-    }, 3000);
-    return () => clearInterval(interval);
   }, []);
 
+
   // API Callbacks
+
+  const refreshStateAfterMutation = async () => {
+    // business logic is unchanged; just re-fetch after successful write operations
+    await fetchState();
+  };
+
   const handleNewBooking = async (formData: any) => {
     try {
-      const res = await fetch("/api/pms/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await api.booking.createBooking(formData);
+      if (data?.success) {
         await fetchState();
         return data;
       }
-      return { success: false, error: data.error };
+      return { success: false, error: data?.error };
     } catch (err) {
       return { success: false, error: "Network transport error" };
     }
@@ -157,17 +184,12 @@ export default function App() {
 
   const handleUpdateBooking = async (id: string, payload: any) => {
     try {
-      const res = await fetch(`/api/pms/bookings/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await api.booking.updateBooking(id, payload);
+      if (data?.success) {
         await fetchState();
         return data;
       }
-      return { success: false, error: data.error };
+      return { success: false, error: data?.error };
     } catch (err) {
       return { success: false, error: "Network update error" };
     }
@@ -175,17 +197,12 @@ export default function App() {
 
   const handleUpdateRoomStatus = async (id: string, status: RoomStatus) => {
     try {
-      const res = await fetch(`/api/pms/rooms/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await api.room.updateRoomStatus(id, status);
+      if (data?.success) {
         await fetchState();
         return data;
       }
-      return { success: false, error: data.error };
+      return { success: false, error: data?.error };
     } catch (err) {
       return { success: false, error: "Network room update error" };
     }
@@ -193,17 +210,12 @@ export default function App() {
 
   const handleUploadCheckin = async (bookingId: string, payload: any) => {
     try {
-      const res = await fetch(`/api/pms/checkin/${bookingId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await api.checkin.uploadCheckin(bookingId, payload);
+      if (data?.success) {
         await fetchState();
         return data;
       }
-      return { success: false, error: data.error };
+      return { success: false, error: data?.error };
     } catch (err) {
       return { success: false, error: "Network check-in upload error" };
     }
@@ -211,17 +223,12 @@ export default function App() {
 
   const handleRoomUpgrade = async (bookingId: string, payload: any) => {
     try {
-      const res = await fetch(`/api/pms/upgrade/${bookingId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const data = await api.checkin.upgradeRoom(bookingId, payload);
+      if (data?.success) {
         await fetchState();
         return data;
       }
-      return { success: false, error: data.error };
+      return { success: false, error: data?.error };
     } catch (err) {
       return { success: false, error: "Network room upgrade error" };
     }
@@ -229,10 +236,8 @@ export default function App() {
 
   const handleMarkNotificationsRead = async () => {
     try {
-      const res = await fetch("/api/pms/notifications/read", { method: "POST" });
-      if (res.ok) {
-        await fetchState();
-      }
+      await api.system.markNotificationsRead();
+      await fetchState();
     } catch (err) {
       console.error(err);
     }
@@ -241,11 +246,10 @@ export default function App() {
   const handleResetPMS = async () => {
     if (!window.confirm("Are you sure you want to restore the hotel database back to clean, default seeds? Any custom bookings you made will be wiped.")) return;
     try {
-      const res = await fetch("/api/pms/reset", { method: "POST" });
-      if (res.ok) {
-        await fetchState();
-        alert("PMS database successfully reseeded!");
-      }
+      const res = await api.system.resetPMS();
+      await fetchState();
+      alert("PMS database successfully reseeded!");
+      return res;
     } catch (err) {
       console.error(err);
     }
@@ -253,14 +257,8 @@ export default function App() {
 
   const handleAddRequest = async (payload: any) => {
     try {
-      const res = await fetch("/api/pms/service-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        await fetchState();
-      }
+      await api.guest.addServiceRequest(payload);
+      await fetchState();
     } catch (err) {
       console.error("Error creating service request:", err);
     }
@@ -268,14 +266,8 @@ export default function App() {
 
   const handleUpdateServiceRequest = async (id: string, payload: any) => {
     try {
-      const res = await fetch(`/api/pms/service-requests/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        await fetchState();
-      }
+      await api.guest.updateServiceRequest(id, payload);
+      await fetchState();
     } catch (err) {
       console.error("Error updating service request:", err);
     }
@@ -283,14 +275,8 @@ export default function App() {
 
   const handleAddInquiry = async (payload: any) => {
     try {
-      const res = await fetch("/api/pms/tourism-inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        await fetchState();
-      }
+      await api.guest.addTourismInquiry(payload);
+      await fetchState();
     } catch (err) {
       console.error("Error creating tourism inquiry:", err);
     }
@@ -298,14 +284,8 @@ export default function App() {
 
   const handleAddFeedback = async (payload: any) => {
     try {
-      const res = await fetch("/api/pms/feedbacks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        await fetchState();
-      }
+      await api.guest.addFeedback(payload);
+      await fetchState();
     } catch (err) {
       console.error("Error creating feedback:", err);
     }
@@ -313,32 +293,57 @@ export default function App() {
 
   const handleUpdateFeedbackStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/pms/feedbacks/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ serviceRecoveryStatus: status })
-      });
-      if (res.ok) {
-        await fetchState();
-      }
+      await api.guest.updateFeedbackStatus(id, status);
+      await fetchState();
     } catch (err) {
       console.error("Error updating feedback status:", err);
     }
   };
 
-  const handleLoginSuccess = (user: any) => {
-    setStaffUser(user);
+  const handleLoginSuccess = (payload: { username: string; role: AuthRole }) => {
+    const session: StoredStaffSession = {
+      isLoggedIn: true,
+      username: payload.username,
+      role: payload.role,
+    };
+
+    // store only (username, role, login status)
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+    setStaffUser({ username: session.username, role: session.role });
     setIsStaffLoggedIn(true);
     setShowStaffLogin(false);
-    setAdminTab(user.role === "admin" ? "dashboard" : "rooms");
+
+    const targetPath = ROLE_ROUTES[session.role];
+    setRoute(session.role === "reception" ? "ops" : "owner");
+    window.history.pushState({}, "", targetPath);
   };
 
   const handleLogout = () => {
+    sessionStorage.removeItem(SESSION_KEY);
     setStaffUser(null);
     setIsStaffLoggedIn(false);
+    setShowStaffLogin(false);
+    setRoute("home");
+    window.history.pushState({}, "", "/");
   };
 
-  // Listen to popstate window events for back/forward routing sync
+
+  // Keep route in sync with current URL (no business logic changes)
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    const hostname = window.location.hostname;
+    if (hostname.startsWith("guest.") || pathname === "/guest") {
+      setRoute("guest");
+    } else if (hostname.startsWith("ops.") || pathname === "/ops") {
+      setRoute("ops");
+    } else if (hostname.startsWith("owner.") || pathname === "/owner") {
+      setRoute("owner");
+    } else {
+      setRoute("home");
+    }
+  }, []);
+
   useEffect(() => {
     const handlePopState = () => {
       const pathname = window.location.pathname;
@@ -357,36 +362,41 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Sync active logged in actors for easy demoing based on the route
+
+  // On App startup: restore session and protect /ops and /owner.
   useEffect(() => {
     if (isLoading) return;
-    if (route === "ops") {
-      if (!isStaffLoggedIn || staffUser?.role !== "receptionist") {
-        setStaffUser({
-          id: "USR-002",
-          email: "reception@grandcrest.com",
-          name: "Rajesh Kumar (Front Desk)",
-          role: "receptionist"
-        });
-        setIsStaffLoggedIn(true);
-        setAdminTab("serviceCenter");
+
+    const stored = getStoredSession();
+    const isProtectedRoute = route === "ops" || route === "owner";
+
+    if (stored) {
+      setIsStaffLoggedIn(true);
+      setStaffUser({ username: stored.username, role: stored.role });
+
+      // default landing tab inside staff console
+      setAdminTab(route === "ops" ? "serviceCenter" : "ownerDashboard");
+
+      // If user is on public landing but has an active session, open correct protected route.
+      if (!isProtectedRoute) {
+        const targetPath = ROLE_ROUTES[stored.role];
+        window.history.pushState({}, "", targetPath);
+        setRoute(stored.role === "reception" ? "ops" : "owner");
       }
-    } else if (route === "owner") {
-      if (!isStaffLoggedIn || staffUser?.role !== "admin") {
-        setStaffUser({
-          id: "USR-001",
-          email: "owner@grandcrest.com",
-          name: "Saurav Sen (Owner)",
-          role: "admin"
-        });
-        setIsStaffLoggedIn(true);
-        setAdminTab("ownerDashboard");
-      }
-    } else if (route === "guest") {
-      setStaffUser(null);
-      setIsStaffLoggedIn(false);
+
+      return;
+    }
+
+    // No valid session
+    setIsStaffLoggedIn(false);
+    setStaffUser(null);
+
+    if (isProtectedRoute) {
+      setShowStaffLogin(true);
     }
   }, [route, isLoading]);
+
+
 
   const handleNavigate = (newRoute: string) => {
     setRoute(newRoute);
@@ -412,21 +422,28 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-between selection:bg-indigo-600/20 text-slate-900 dark:text-slate-100 transition-colors">
       
-      {/* 0. DYNAMIC DNS MULTI-DOMAIN ROUTING SIMU-BAR */}
-      <SubdomainSimulator currentRoute={route} onNavigate={handleNavigate} />
+      {/* 0. DYNAMIC DNS MULTI-DOMAIN ROUTING SIMU-BAR (dev-only) */}
+      {DEV_MODE && (
+        <SubdomainSimulator currentRoute={route} onNavigate={handleNavigate} />
+      )}
 
-      {/* PERSISTENT FLOATING DOCUMENTATION TOGGLE (ELEGANT DESIGN) */}
-      <button
-        type="button"
-        onClick={() => setShowDevDocs(true)}
-        className="fixed bottom-6 right-6 z-50 bg-indigo-600 text-white px-4 py-2.5 rounded-full hover:bg-indigo-700 transition-all shadow-xl font-bold text-xs flex items-center gap-2 cursor-pointer border border-indigo-500/20"
-      >
-        <Database className="w-4 h-4" />
-        <span>View SQL & Schemas</span>
-      </button>
+
+      {/* PERSISTENT FLOATING DOCUMENTATION TOGGLE (dev-only) */}
+      {DEV_MODE && (
+        <button
+          type="button"
+          onClick={() => setShowDevDocs(true)}
+          className="fixed bottom-6 right-6 z-50 bg-indigo-600 text-white px-4 py-2.5 rounded-full hover:bg-indigo-700 transition-all shadow-xl font-bold text-xs flex items-center gap-2 cursor-pointer border border-indigo-500/20"
+        >
+          <Database className="w-4 h-4" />
+          <span>View SQL & Schemas</span>
+        </button>
+      )}
+
 
       {/* 1. SEPARATED SUBDOMAINS OR PATHS ROUTER */}
       {route === "guest" ? (
+
         /* GUEST EXPERIENCES PORTAL ENGINE */
         <div id="hotel-guest-landscape" className="flex flex-col min-h-screen justify-between bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
           <UnifiedGuestPortal
@@ -445,9 +462,10 @@ export default function App() {
           />
           <CustomerFooter />
         </div>
-      ) : route === "ops" || route === "owner" ? (
-        /* STAFF PMS CONSOLE WITH RESTRICTED ROLE VIEWS */
-        isStaffLoggedIn ? (
+        ) : route === "ops" || route === "owner" ? (
+          /* STAFF PMS CONSOLE WITH RESTRICTED ROLE VIEWS */
+          isStaffLoggedIn ? (
+
           <div id="staff-admin-environment" className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-900">
             {/* Staff Top Nav */}
             <header className="bg-slate-900 text-white border-b border-slate-850 sticky top-0 z-40">
@@ -577,6 +595,7 @@ export default function App() {
                         { id: "auditLogs", label: "📜 System Activity Logs" }
                       ]
                   ).map((st) => (
+
                     <button
                       key={st.id}
                       onClick={() => setAdminTab(st.id)}
@@ -805,10 +824,11 @@ export default function App() {
         />
       )}
 
-      {/* DYNAMIC SCANNED DEV DATABASE DOCUMENTATION MODAL DRAWER */}
-      {showDevDocs && (
+      {/* DYNAMIC SCANNED DEV DATABASE DOCUMENTATION MODAL DRAWER (dev-only) */}
+      {DEV_MODE && showDevDocs && (
         <div id="floating-developer-drawer-overlay" className="fixed inset-0 bg-stone-950/80 backdrop-blur-xs flex items-center justify-center z-50 p-4 font-sans text-stone-850">
           <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden border border-stone-200">
+
             {/* Header controls */}
             <div className="bg-stone-900 text-stone-100 p-5 flex justify-between items-center border-b border-stone-800">
               <div className="flex items-center gap-2">
@@ -828,7 +848,7 @@ export default function App() {
 
             {/* Embedded Docs viewer */}
             <div className="p-6 max-h-[75vh] overflow-y-auto">
-              <DevDocsViewer />
+              {/* <DevDocsViewer /> */}
             </div>
 
             {/* Footer warning */}
