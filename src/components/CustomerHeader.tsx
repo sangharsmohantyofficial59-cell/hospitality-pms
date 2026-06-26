@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from "react";
-import { Hotel, KeyRound, Search, CalendarPlus, UserCheck, Sun, Moon } from "lucide-react";
+import { Hotel, KeyRound, Search, CalendarPlus, UserCheck, Sun, Moon, ChevronLeft } from "lucide-react";
 import { hotelConfig } from "../config/hotelConfig";
 
 interface CustomerHeaderProps {
@@ -67,12 +67,19 @@ export default function CustomerHeader({ currentTab, setTab, onAdminClick, onMyS
           <nav id="customer-navigation" className="hidden lg:flex items-center gap-1">
             {[
               { id: "home", label: "Home" },
-              { id: "rooms", label: "Rooms & Suites" },
-              { id: "dining", label: "Dining" },
-              { id: "explore", label: "Experiences" },
-              { id: "locality", label: `Explore ${hotelConfig.destinationExplorer?.localityName || "Locality"}` },
-              { id: "gallery", label: "Gallery" },
+
+              // Primary CTA must be immediately after Home
+              { id: "booking", label: "Book Your Stay", isPrimaryCta: true },
+
+              // Staff login stays in the same position (rendered below, not here)
+              { id: "rooms", label: "Rooms" },
               { id: "offers", label: "Offers" },
+              { id: "dining", label: "Dining" },
+
+              // Merge Experiences + Explore Puri into a single item using existing "explore" tab
+              { id: "explore", label: "Explore" },
+
+              { id: "gallery", label: "Gallery" },
               { id: "contact", label: "Contact" }
             ].map(item => (
               <button
@@ -80,13 +87,15 @@ export default function CustomerHeader({ currentTab, setTab, onAdminClick, onMyS
                 id={`nav-${item.id}`}
                 onClick={() => setTab(item.id)}
                 className={`px-3 py-2 text-sm font-semibold tracking-wide transition-all rounded-lg relative ${
-                  currentTab === item.id
-                    ? "text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20"
-                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                  item.isPrimaryCta
+                    ? "text-white bg-amber-600 hover:bg-amber-700 shadow-sm hover:shadow-md cursor-pointer"
+                    : currentTab === item.id
+                      ? "text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
                 }`}
               >
                 {item.label}
-                {currentTab === item.id && (
+                {currentTab === item.id && !item.isPrimaryCta && (
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-amber-500 rounded-full animate-fade-in" />
                 )}
               </button>
@@ -118,20 +127,11 @@ export default function CustomerHeader({ currentTab, setTab, onAdminClick, onMyS
             <button
               id="btn-admin-portal"
               onClick={onAdminClick}
-              className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono font-medium hover:bg-slate-50/80 dark:hover:bg-slate-800 transition-all font-semibold cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 text-white bg-sky-500 hover:bg-sky-600 border border-sky-400 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer shadow-sm"
               title="Admin PMS Panel"
             >
-              <KeyRound className="w-3.5 h-3.5 text-amber-500 dark:text-amber-405" />
+              <KeyRound className="w-3.5 h-3.5 text-white" />
               <span className="hidden sm:inline">Staff Login</span>
-            </button>
-
-            {/* Book Your Stay (Primary CTA) */}
-            <button
-              id="btn-book-now-header"
-              onClick={() => setTab("booking")}
-              className="px-4 py-2 bg-amber-600 text-white dark:text-slate-950 dark:bg-amber-400 dark:hover:bg-amber-500 rounded-lg text-sm font-bold shadow-sm hover:bg-amber-700 transition-all hover:shadow-md cursor-pointer"
-            >
-              Book Your Stay
             </button>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function CustomerHeader({ currentTab, setTab, onAdminClick, onMyS
           }`}
         >
           <span className="text-base leading-none">🛏️</span>
-          <span>Suites</span>
+          <span>Rooms</span>
         </button>
         <button
           onClick={() => setTab("booking")}

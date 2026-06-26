@@ -515,6 +515,45 @@
           "notes": "Created via channel: Website - Category: std (Pay Full Selected)"
         }
       ]
+    },
+    {
+      "id": "BK-4111",
+      "guestId": "GUST-6652",
+      "roomId": null,
+      "roomTypeId": "std",
+      "checkInDate": "2026-06-27",
+      "checkOutDate": "2026-06-29",
+      "numberOfGuests": 2,
+      "totalPrice": 4928,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-06-26T17:38:04.111Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 4928,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-06-26T17:38:04.111Z",
+          "action": "Booking Created",
+          "user": "Sanghars Mohanty",
+          "notes": "Created via channel: Website - Category: std (Pay Full Selected)"
+        }
+      ]
     }
   ],
   "payments": [
@@ -649,9 +688,34 @@
       "transactionId": "ref_BK-6652",
       "createdAt": "2026-06-25T11:40:03.097Z",
       "notes": "Credit Balance Refund for Folio BK-6652"
+    },
+    {
+      "id": "PAY-4126",
+      "bookingId": "BK-4111",
+      "amount": 4928,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_483743",
+      "createdAt": "2026-06-26T17:38:04.126Z"
     }
   ],
   "notifications": [
+    {
+      "id": "NT-1782495484126-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "Sanghars Mohanty booked a room for 2026-06-27 to 2026-06-29.",
+      "isRead": false,
+      "createdAt": "2026-06-26T17:38:04.126Z"
+    },
+    {
+      "id": "NT-1782495484126-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹4,928 received for booking BK-4111.",
+      "isRead": false,
+      "createdAt": "2026-06-26T17:38:04.126Z"
+    },
     {
       "id": "NT-1782384156664-bk",
       "type": "new_booking",
@@ -783,6 +847,31 @@
   ],
   "documents": [],
   "messageLogs": [
+    {
+      "id": "MSG-2397-W",
+      "bookingId": "BK-4111",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "+919078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp: booking confirmation",
+      "body": "⭐ *Reservation Confirmed!* ⭐\nDear *Sanghars Mohanty*, your booking reference *BK-4111* at *Grand Crest Hotel Kolkata* is confirmed.\n\n🛏️ *Suite:* Niladri Cozy Sanctuary\n🗓️ *Dates:* 2026-06-27 to 2026-06-29\n👥 *Guests:* 2 Person(s)\n💰 *Total Paid:* ₹4,928\n\n⚡ *Express Check-In:* Avoid lobby delays! Please upload your ID proofs online before arrival:\n👉 https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-4111\n\nWe look forward to welcoming you!",
+      "status": "Simulated",
+      "sentAt": "2026-06-26T17:38:12.397Z"
+    },
+    {
+      "id": "MSG-4127-E",
+      "bookingId": "BK-4111",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "sangharsmohanty59@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Grand Crest (BK-4111)",
+      "body": "Dear Sanghars Mohanty,\n\nYour reservation at Grand Crest Hotel (18, Park Street, Kolkata) has been successfully guaranteed.\n\nBooking Summary Details:\n- Booking Reference: BK-4111\n- Reserved Category: Niladri Cozy Sanctuary\n- Schedule Period: 2026-06-27 to 2026-06-29\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹4,928 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-4111\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/aj64.atu2Pi7zHQAaj65A4tyfEwQgggsAAAAAX3Vrapx2hDwl6l3muowwNo",
+      "sentAt": "2026-06-26T17:38:04.127Z"
+    },
     {
       "id": "MSG-6256-W",
       "bookingId": "BK-6652",
@@ -1110,6 +1199,14 @@
     }
   ],
   "activityLogs": [
+    {
+      "id": "ACT-4111",
+      "timestamp": "2026-06-26T17:38:04.111Z",
+      "action": "Reservation Creation",
+      "user": "Website Engine",
+      "details": "New reservation BK-4111 created for guest Sanghars Mohanty (Room Booking). Total: ₹4,928",
+      "icon": "create"
+    },
     {
       "id": "ACT-1952",
       "timestamp": "2026-06-25T13:11:31.952Z",

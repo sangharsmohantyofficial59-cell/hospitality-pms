@@ -61,9 +61,10 @@ export default function AdminLogin({ onLoginSuccess, onClose }: AdminLoginProps)
           </div>
           <button
             onClick={onClose}
-            className="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-900 py-1 px-2.5 border border-slate-800 rounded-lg transition-colors cursor-pointer"
+            aria-label="Return to site"
+            className="group inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-indigo-600/10 transition-all cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Return to Site
+            <ArrowLeft className="w-4 h-4 text-slate-300 group-hover:text-indigo-200 transition-colors" />
           </button>
         </div>
 
