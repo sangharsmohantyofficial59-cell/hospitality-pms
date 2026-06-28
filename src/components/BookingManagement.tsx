@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Booking, Guest, Room, RoomType, BookingSource, BookingStatus, PaymentStatus, RoomStatus } from "../types";
-import { PlusCircle, Search, Trash2, Edit3, CheckCircle2, UserPlus, LogIn, LogOut, XCircle, Calendar, CreditCard, ChevronDown, Download, FileText } from "lucide-react";
+import { PlusCircle, Search, Trash2, Edit3, CheckCircle2, UserPlus, LogIn, LogOut, XCircle, Calendar, CreditCard, ChevronDown, Download, FileText, AlertTriangle } from "lucide-react";
 import { jsPDF } from "jspdf";
 
 export function handleExportInvoiceToPDF(booking: Booking, guest: Guest | undefined, roomType: RoomType | undefined) {
@@ -305,6 +305,10 @@ export default function BookingManagement({
   // Room assignment dropdown state tracking
   const [assigningBookingId, setAssigningBookingId] = useState<string | null>(null);
 
+  // Inline conflict handling for room assignment
+  const [roomAssignmentConflictByBooking, setRoomAssignmentConflictByBooking] = useState<Record<string, string>>({});
+
+
   // Advanced Demonstration Tabs and Forms State tracking
   const [detailTab, setDetailTab] = useState<"invoice" | "extend" | "early_checkout" | "transport" | "audit" | "verification">("invoice");
   const [customLineDesc, setCustomLineDesc] = useState("");
@@ -345,8 +349,29 @@ export default function BookingManagement({
     }
   }, [selectedBooking]);
 
-  // Manual trigger alerts worker helper
+  type UiToastType = "success" | "error" | "warning" | "info";
+  const [uiToast, setUiToast] = useState<{ type: UiToastType; message: string } | null>(null);
+  const [uiBusy, setUiBusy] = useState<{
+    assigningBookingId: string | null;
+    statusBookingId: string | null;
+    cancelBookingId: string | null;
+    manualNotifyBookingId: string | null;
+  }>({
+    assigningBookingId: null,
+    statusBookingId: null,
+    cancelBookingId: null,
+    manualNotifyBookingId: null,
+  });
+
+  const showToast = (type: UiToastType, message: string) => {
+    setUiToast({ type, message });
+    window.setTimeout(() => setUiToast(null), 4200);
+  };
+
+  // Manual trigger notifications helper
   const handleManualMessageDispatch = async (bookingId: string, event: string) => {
+    if (uiBusy.manualNotifyBookingId === bookingId) return;
+    setUiBusy(prev => ({ ...prev, manualNotifyBookingId: bookingId }));
     try {
       const res = await fetch(`/api/pms/bookings/${bookingId}/send-message`, {
         method: "POST",
@@ -354,15 +379,18 @@ export default function BookingManagement({
         body: JSON.stringify({ event })
       });
       const data = await res.json();
+
       if (res.ok && data.success) {
-        alert(`Successfully dispatched guest ${event.replace(/_/g, " ")} through Email & WhatsApp!`);
-        // Refresh full state
+        showToast("success", `Notification sent to guest (${event.replace(/_/g, " ")}).`);
+        // Refresh full state (keeps user on same page)
         await onUpdateBooking(bookingId, {});
       } else {
-        alert(data.error || "Failed delivering notification dispatch alert.");
+        showToast("error", data.error || "We couldn't send the guest notification." );
       }
-    } catch (e) {
-      alert("Error dispatching manual request.");
+    } catch {
+      showToast("error", "Network error while sending guest notification." );
+    } finally {
+      setUiBusy(prev => ({ ...prev, manualNotifyBookingId: null }));
     }
   };
 
@@ -492,11 +520,58 @@ Remarks: ${mNotes}`;
 
   // Assign room API trigger
   const handleRoomAssignment = async (bookingId: string, roomId: string) => {
+    // Clear any previous conflict message for this booking when attempting a new selection
+    setRoomAssignmentConflictByBooking(prev => {
+      if (!prev[bookingId]) return prev;
+      const next = { ...prev };
+      delete next[bookingId];
+      return next;
+    });
+
+    // Prevent duplicate submissions while assigning
+    if (uiBusy.assigningBookingId === bookingId) return;
+    setUiBusy(prev => ({ ...prev, assigningBookingId: bookingId }));
+
     try {
       await onUpdateBooking(bookingId, { roomId });
+      showToast("success", "Room assigned successfully.");
       setAssigningBookingId(null);
-    } catch (err) {
-      alert("Failed room assignment.");
+    } catch (err: any) {
+      // Centralized-ish: detect conflict/validation errors without hard-coding only status === 409
+      const status =
+        err?.status ??
+        err?.response?.status ??
+        err?.response?.data?.status ??
+        err?.data?.status;
+
+      const message = String(err?.message || "");
+      const isConflict = status === 409 || message.toLowerCase().includes("409") || message.toLowerCase().includes("conflict");
+
+      if (isConflict) {
+        showToast(
+          "warning",
+          "This room is already assigned to another guest for the selected dates."
+        );
+
+        setRoomAssignmentConflictByBooking(prev => ({
+          ...prev,
+          [bookingId]: "⚠ Room Already Assigned: This room is already assigned to another active booking for the selected dates."
+        }));
+
+        // Keep receptionist on the current screen/row. Do NOT close dropdown.
+        setAssigningBookingId(bookingId);
+        return;
+      }
+
+      // Non-conflict fallback: friendly inline toast + keep dropdown open
+      showToast("error", err?.message ? String(err.message) : "Room assignment failed. Please try another room.");
+      setRoomAssignmentConflictByBooking(prev => ({
+        ...prev,
+        [bookingId]: err?.message ? String(err.message) : "Room assignment failed due to a validation or network error."
+      }));
+      setAssigningBookingId(bookingId);
+    } finally {
+      setUiBusy(prev => ({ ...prev, assigningBookingId: null }));
     }
   };
 
@@ -659,21 +734,35 @@ Remarks: ${mNotes}`;
                             
                             {/* In-Line Room Assignment triggers */}
                             {b.status !== BookingStatus.CANCELLED && b.status !== BookingStatus.CHECKED_OUT && (
-                              <div className="relative mt-1">
+                            <div className="relative mt-1">
                                 {assigningBookingId === b.id ? (
-                                  <select
-                                    onChange={(e) => handleRoomAssignment(b.id, e.target.value)}
-                                    className="px-2 py-1 border border-amber-600 bg-white rounded font-mono text-[10px]"
-                                    defaultValue=""
-                                  >
-                                    <option value="" disabled>Select Room...</option>
-                                    {vacantRoomsMatchingType.map(vr => (
-                                      <option key={vr.id} value={vr.id}>Room {vr.id}</option>
-                                    ))}
-                                    {vacantRoomsMatchingType.length === 0 && (
-                                      <option disabled>No vacants available</option>
+                                  <>
+                                    <select
+                                      onChange={(e) => handleRoomAssignment(b.id, e.target.value)}
+                                      className="px-2 py-1 border border-amber-600 bg-white rounded font-mono text-[10px]"
+                                      defaultValue=""
+                                    >
+                                      <option value="" disabled>Select Room...</option>
+                                      {vacantRoomsMatchingType.map(vr => (
+                                        <option key={vr.id} value={vr.id}>Room {vr.id}</option>
+                                      ))}
+                                      {vacantRoomsMatchingType.length === 0 && (
+                                        <option disabled>No vacants available</option>
+                                      )}
+                                    </select>
+
+                                    {roomAssignmentConflictByBooking[b.id] && (
+                                      <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-[10px] text-amber-900 flex items-start gap-2 shadow-sm">
+                                        <span className="mt-0.5">⚠</span>
+                                        <div className="leading-relaxed">
+                                          <div className="font-extrabold">Room Already Assigned</div>
+                                          <div className="text-amber-800 mt-0.5">
+                                            {roomAssignmentConflictByBooking[b.id].replace(/^⚠ Room Already Assigned:\s*/i, "")}
+                                          </div>
+                                        </div>
+                                      </div>
                                     )}
-                                  </select>
+                                  </>
                                 ) : (
                                   <button
                                     onClick={() => setAssigningBookingId(b.id)}
@@ -728,15 +817,27 @@ Remarks: ${mNotes}`;
                             <FileText className="w-3.5 h-3.5 text-amber-600" /> Invoice 🧾
                           </button>
 
-                          {b.status === BookingStatus.CONFIRMED && b.roomId && (
-                            <button
-                              onClick={() => handleStatusUpdate(b.id, BookingStatus.CHECKED_IN)}
-                              title="Process check-in key handoff"
-                              className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold font-mono text-[10px] flex items-center gap-1 cursor-pointer"
-                            >
-                              <LogIn className="w-3.5 h-3.5" /> Check-In
-                            </button>
+                          {b.status === BookingStatus.CONFIRMED && (
+                            b.roomId ? (
+                              <button
+                                onClick={() => handleStatusUpdate(b.id, BookingStatus.CHECKED_IN)}
+                                title="Process check-in key handoff"
+                                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold font-mono text-[10px] flex items-center gap-1 cursor-pointer"
+                              >
+                                <LogIn className="w-3.5 h-3.5" /> Check-In
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled
+                                title="Guest cannot be checked in until a room has been assigned"
+                                className="px-2.5 py-1 bg-slate-200 text-slate-500 rounded font-bold font-mono text-[10px] flex items-center gap-1 cursor-not-allowed opacity-80"
+                              >
+                                <AlertTriangle className="w-3.5 h-3.5" /> Check-In
+                              </button>
+                            )
                           )}
+
 
                           {b.status === BookingStatus.CHECKED_IN && (
                             <button

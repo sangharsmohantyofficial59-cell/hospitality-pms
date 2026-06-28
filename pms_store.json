@@ -3,7 +3,7 @@
     {
       "id": "101",
       "roomTypeId": "std",
-      "status": "Available"
+      "status": "Reserved"
     },
     {
       "id": "102",
@@ -28,12 +28,12 @@
     {
       "id": "106",
       "roomTypeId": "std",
-      "status": "Available"
+      "status": "Reserved"
     },
     {
       "id": "107",
       "roomTypeId": "std",
-      "status": "Available"
+      "status": "Reserved"
     },
     {
       "id": "108",
@@ -43,12 +43,12 @@
     {
       "id": "109",
       "roomTypeId": "std",
-      "status": "Available"
+      "status": "Reserved"
     },
     {
       "id": "110",
       "roomTypeId": "std",
-      "status": "Available"
+      "status": "Reserved"
     },
     {
       "id": "201",
@@ -473,12 +473,12 @@
     {
       "id": "BK-6652",
       "guestId": "GUST-6652",
-      "roomId": null,
+      "roomId": "101",
       "roomTypeId": "std",
       "checkInDate": "2026-06-26",
       "checkOutDate": "2026-06-28",
       "numberOfGuests": 2,
-      "totalPrice": 6048,
+      "totalPrice": 7168,
       "source": "Website",
       "status": "Confirmed",
       "paymentStatus": "Paid",
@@ -519,7 +519,7 @@
     {
       "id": "BK-4111",
       "guestId": "GUST-6652",
-      "roomId": null,
+      "roomId": "110",
       "roomTypeId": "std",
       "checkInDate": "2026-06-27",
       "checkOutDate": "2026-06-29",
@@ -549,6 +549,123 @@
       "auditLogs": [
         {
           "timestamp": "2026-06-26T17:38:04.111Z",
+          "action": "Booking Created",
+          "user": "Sanghars Mohanty",
+          "notes": "Created via channel: Website - Category: std (Pay Full Selected)"
+        }
+      ]
+    },
+    {
+      "id": "BK-3386",
+      "guestId": "GUST-6652",
+      "roomId": "107",
+      "roomTypeId": "std",
+      "checkInDate": "2026-06-29",
+      "checkOutDate": "2026-07-01",
+      "numberOfGuests": 2,
+      "totalPrice": 4928,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-06-28T15:44:03.386Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 4928,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-06-28T15:44:03.386Z",
+          "action": "Booking Created",
+          "user": "Sanghars Mohanty",
+          "notes": "Created via channel: Website - Category: std (Pay Full Selected)"
+        }
+      ]
+    },
+    {
+      "id": "BK-5614",
+      "guestId": "GUST-6652",
+      "roomId": "109",
+      "roomTypeId": "std",
+      "checkInDate": "2026-06-29",
+      "checkOutDate": "2026-07-01",
+      "numberOfGuests": 2,
+      "totalPrice": 4928,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-06-28T15:45:25.614Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 4928,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-06-28T15:45:25.614Z",
+          "action": "Booking Created",
+          "user": "Sanghars Mohanty",
+          "notes": "Created via channel: Website - Category: std (Pay Full Selected)"
+        }
+      ]
+    },
+    {
+      "id": "BK-2299",
+      "guestId": "GUST-6652",
+      "roomId": "106",
+      "roomTypeId": "std",
+      "checkInDate": "2026-06-29",
+      "checkOutDate": "2026-07-01",
+      "numberOfGuests": 2,
+      "totalPrice": 4928,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-06-28T16:14:12.299Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 4928,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-06-28T16:14:12.299Z",
           "action": "Booking Created",
           "user": "Sanghars Mohanty",
           "notes": "Created via channel: Website - Category: std (Pay Full Selected)"
@@ -697,9 +814,142 @@
       "status": "Paid",
       "transactionId": "pay_rzp_483743",
       "createdAt": "2026-06-26T17:38:04.126Z"
+    },
+    {
+      "id": "PAY-3389",
+      "bookingId": "BK-3386",
+      "amount": 4928,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_443332",
+      "createdAt": "2026-06-28T15:44:03.389Z"
+    },
+    {
+      "id": "PAY-5614",
+      "bookingId": "BK-5614",
+      "amount": 4928,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_525300",
+      "createdAt": "2026-06-28T15:45:25.614Z"
+    },
+    {
+      "id": "PAY-2321",
+      "bookingId": "BK-2299",
+      "amount": 4928,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_251979",
+      "createdAt": "2026-06-28T16:14:12.321Z"
+    },
+    {
+      "id": "PAY-0417",
+      "bookingId": "BK-6652",
+      "amount": 1120,
+      "method": "UPI",
+      "status": "Paid",
+      "transactionId": "pay_settle_1782663300417",
+      "createdAt": "2026-06-28T16:15:00.417Z",
+      "notes": "Checkout Settlement Revenue: Settle and Close Folio BK-6652"
     }
   ],
   "notifications": [
+    {
+      "id": "NT-1782663331895-room",
+      "type": "room_assignment",
+      "title": "Room Assigned",
+      "message": "Room 106 assigned to booking BK-2299.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:15:31.895Z"
+    },
+    {
+      "id": "NT-1782663324959-room",
+      "type": "room_assignment",
+      "title": "Room Assigned",
+      "message": "Room 109 assigned to booking BK-5614.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:15:24.959Z"
+    },
+    {
+      "id": "NT-1782663318961-room",
+      "type": "room_assignment",
+      "title": "Room Assigned",
+      "message": "Room 107 assigned to booking BK-3386.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:15:18.961Z"
+    },
+    {
+      "id": "NT-1782663310247-room",
+      "type": "room_assignment",
+      "title": "Room Assigned",
+      "message": "Room 110 assigned to booking BK-4111.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:15:10.247Z"
+    },
+    {
+      "id": "NT-1782663300417-room",
+      "type": "room_assignment",
+      "title": "Room Assigned",
+      "message": "Room 101 assigned to booking BK-6652.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:15:00.417Z"
+    },
+    {
+      "id": "NT-1782663300417-settle",
+      "type": "payment_confirmation",
+      "title": "Settle and Close Payment Recorded",
+      "message": "UPI checkout settlement of ₹1,120 received for booking BK-6652.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:15:00.417Z"
+    },
+    {
+      "id": "NT-1782663252321-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "Sanghars Mohanty booked a room for 2026-06-29 to 2026-07-01.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:14:12.321Z"
+    },
+    {
+      "id": "NT-1782663252321-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹4,928 received for booking BK-2299.",
+      "isRead": false,
+      "createdAt": "2026-06-28T16:14:12.321Z"
+    },
+    {
+      "id": "NT-1782661525614-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "Sanghars Mohanty booked a room for 2026-06-29 to 2026-07-01.",
+      "isRead": false,
+      "createdAt": "2026-06-28T15:45:25.614Z"
+    },
+    {
+      "id": "NT-1782661525614-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹4,928 received for booking BK-5614.",
+      "isRead": false,
+      "createdAt": "2026-06-28T15:45:25.614Z"
+    },
+    {
+      "id": "NT-1782661443389-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "Sanghars Mohanty booked a room for 2026-06-29 to 2026-07-01.",
+      "isRead": false,
+      "createdAt": "2026-06-28T15:44:03.389Z"
+    },
+    {
+      "id": "NT-1782661443389-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹4,928 received for booking BK-3386.",
+      "isRead": false,
+      "createdAt": "2026-06-28T15:44:03.389Z"
+    },
     {
       "id": "NT-1782495484126-bk",
       "type": "new_booking",
@@ -847,6 +1097,81 @@
   ],
   "documents": [],
   "messageLogs": [
+    {
+      "id": "MSG-7186-W",
+      "bookingId": "BK-2299",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "+919078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp: booking confirmation",
+      "body": "⭐ *Reservation Confirmed!* ⭐\nDear *Sanghars Mohanty*, your booking reference *BK-2299* at *Grand Crest Hotel Kolkata* is confirmed.\n\n🛏️ *Suite:* Niladri Cozy Sanctuary\n🗓️ *Dates:* 2026-06-29 to 2026-07-01\n👥 *Guests:* 2 Person(s)\n💰 *Total Paid:* ₹4,928\n\n⚡ *Express Check-In:* Avoid lobby delays! Please upload your ID proofs online before arrival:\n👉 https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-2299\n\nWe look forward to welcoming you!",
+      "status": "Simulated",
+      "sentAt": "2026-06-28T16:14:17.186Z"
+    },
+    {
+      "id": "MSG-2322-E",
+      "bookingId": "BK-2299",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "sangharsmohanty59@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Grand Crest (BK-2299)",
+      "body": "Dear Sanghars Mohanty,\n\nYour reservation at Grand Crest Hotel (18, Park Street, Kolkata) has been successfully guaranteed.\n\nBooking Summary Details:\n- Booking Reference: BK-2299\n- Reserved Category: Niladri Cozy Sanctuary\n- Schedule Period: 2026-06-29 to 2026-07-01\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹4,928 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-2299\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/akFBSqtu2Pi7JXJoakFIWItyfEwQkIUwAAAAA9prtVIT-1XMq68pjX1gups",
+      "sentAt": "2026-06-28T16:14:12.322Z"
+    },
+    {
+      "id": "MSG-9613-W",
+      "bookingId": "BK-5614",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "+919078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp: booking confirmation",
+      "body": "⭐ *Reservation Confirmed!* ⭐\nDear *Sanghars Mohanty*, your booking reference *BK-5614* at *Grand Crest Hotel Kolkata* is confirmed.\n\n🛏️ *Suite:* Niladri Cozy Sanctuary\n🗓️ *Dates:* 2026-06-29 to 2026-07-01\n👥 *Guests:* 2 Person(s)\n💰 *Total Paid:* ₹4,928\n\n⚡ *Express Check-In:* Avoid lobby delays! Please upload your ID proofs online before arrival:\n👉 https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-5614\n\nWe look forward to welcoming you!",
+      "status": "Simulated",
+      "sentAt": "2026-06-28T15:45:29.613Z"
+    },
+    {
+      "id": "MSG-5614-E",
+      "bookingId": "BK-5614",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "sangharsmohanty59@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Grand Crest (BK-5614)",
+      "body": "Dear Sanghars Mohanty,\n\nYour reservation at Grand Crest Hotel (18, Park Street, Kolkata) has been successfully guaranteed.\n\nBooking Summary Details:\n- Booking Reference: BK-5614\n- Reserved Category: Niladri Cozy Sanctuary\n- Schedule Period: 2026-06-29 to 2026-07-01\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹4,928 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-5614\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/akFBSqtu2Pi7JXJoakFBmfsdSb1T-XtEAAAAAnozkAkGh7ldSHlCqVMtKf8",
+      "sentAt": "2026-06-28T15:45:25.614Z"
+    },
+    {
+      "id": "MSG-6200-W",
+      "bookingId": "BK-3386",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "+919078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp: booking confirmation",
+      "body": "⭐ *Reservation Confirmed!* ⭐\nDear *Sanghars Mohanty*, your booking reference *BK-3386* at *Grand Crest Hotel Kolkata* is confirmed.\n\n🛏️ *Suite:* Niladri Cozy Sanctuary\n🗓️ *Dates:* 2026-06-29 to 2026-07-01\n👥 *Guests:* 2 Person(s)\n💰 *Total Paid:* ₹4,928\n\n⚡ *Express Check-In:* Avoid lobby delays! Please upload your ID proofs online before arrival:\n👉 https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-3386\n\nWe look forward to welcoming you!",
+      "status": "Simulated",
+      "sentAt": "2026-06-28T15:44:16.200Z"
+    },
+    {
+      "id": "MSG-3390-E",
+      "bookingId": "BK-3386",
+      "guestName": "Sanghars Mohanty",
+      "recipient": "sangharsmohanty59@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Grand Crest (BK-3386)",
+      "body": "Dear Sanghars Mohanty,\n\nYour reservation at Grand Crest Hotel (18, Park Street, Kolkata) has been successfully guaranteed.\n\nBooking Summary Details:\n- Booking Reference: BK-3386\n- Reserved Category: Niladri Cozy Sanctuary\n- Schedule Period: 2026-06-29 to 2026-07-01\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹4,928 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app/guest?bookingId=BK-3386\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/akFBSqtu2Pi7JXJoakFBT4tyfEwQkE0cAAAAAU5la-bh34zfWkdh.eC7vlk",
+      "sentAt": "2026-06-28T15:44:03.390Z"
+    },
     {
       "id": "MSG-2397-W",
       "bookingId": "BK-4111",
@@ -1200,6 +1525,94 @@
   ],
   "activityLogs": [
     {
+      "id": "ACT-6782",
+      "timestamp": "2026-06-28T16:15:46.782Z",
+      "action": "Service Request Updated",
+      "user": "Operations Desk",
+      "details": "Service request REQ-3003 (Late Checkout) status updated to Assigned. Assigned: Rajesh Kumar (Front Desk)",
+      "icon": "service"
+    },
+    {
+      "id": "ACT-0232",
+      "timestamp": "2026-06-28T16:15:40.232Z",
+      "action": "Service Request Updated",
+      "user": "Operations Desk",
+      "details": "Service request REQ-3002 (Extra Towels) status updated to Completed. Assigned: Unassigned",
+      "icon": "service"
+    },
+    {
+      "id": "ACT-7408",
+      "timestamp": "2026-06-28T16:15:37.408Z",
+      "action": "Service Request Updated",
+      "user": "Operations Desk",
+      "details": "Service request REQ-5972 (Drinking Water) status updated to Completed. Assigned: Amit Patel (Housekeeping Lead)",
+      "icon": "service"
+    },
+    {
+      "id": "ACT-1894",
+      "timestamp": "2026-06-28T16:15:31.895Z",
+      "action": "Room Assignment",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "Room 106 assigned to guest reservation BK-2299.",
+      "icon": "room"
+    },
+    {
+      "id": "ACT-4959",
+      "timestamp": "2026-06-28T16:15:24.959Z",
+      "action": "Room Assignment",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "Room 109 assigned to guest reservation BK-5614.",
+      "icon": "room"
+    },
+    {
+      "id": "ACT-8961",
+      "timestamp": "2026-06-28T16:15:18.961Z",
+      "action": "Room Assignment",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "Room 107 assigned to guest reservation BK-3386.",
+      "icon": "room"
+    },
+    {
+      "id": "ACT-0247",
+      "timestamp": "2026-06-28T16:15:10.247Z",
+      "action": "Room Assignment",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "Room 110 assigned to guest reservation BK-4111.",
+      "icon": "room"
+    },
+    {
+      "id": "ACT-0416",
+      "timestamp": "2026-06-28T16:15:00.416Z",
+      "action": "Room Assignment",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "Room 101 assigned to guest reservation BK-6652.",
+      "icon": "room"
+    },
+    {
+      "id": "ACT-2299",
+      "timestamp": "2026-06-28T16:14:12.321Z",
+      "action": "Reservation Creation",
+      "user": "Website Engine",
+      "details": "New reservation BK-2299 created for guest Sanghars Mohanty (Room Booking). Total: ₹4,928",
+      "icon": "create"
+    },
+    {
+      "id": "ACT-5614",
+      "timestamp": "2026-06-28T15:45:25.614Z",
+      "action": "Reservation Creation",
+      "user": "Website Engine",
+      "details": "New reservation BK-5614 created for guest Sanghars Mohanty (Room Booking). Total: ₹4,928",
+      "icon": "create"
+    },
+    {
+      "id": "ACT-3386",
+      "timestamp": "2026-06-28T15:44:03.386Z",
+      "action": "Reservation Creation",
+      "user": "Website Engine",
+      "details": "New reservation BK-3386 created for guest Sanghars Mohanty (Room Booking). Total: ₹4,928",
+      "icon": "create"
+    },
+    {
       "id": "ACT-4111",
       "timestamp": "2026-06-26T17:38:04.111Z",
       "action": "Reservation Creation",
@@ -1399,13 +1812,14 @@
       "guestName": "Rajesh Kumar",
       "roomId": "201",
       "requestType": "Drinking Water",
-      "status": "Assigned",
+      "status": "Completed",
       "timestamp": "2026-06-24T19:31:45.972Z",
       "comments": "3",
       "category": "Housekeeping",
       "priority": "Medium",
       "assignedStaff": "Amit Patel (Housekeeping Lead)",
-      "createdTime": "2026-06-24T19:31:45.972Z"
+      "createdTime": "2026-06-24T19:31:45.972Z",
+      "completionTime": "2026-06-28T16:15:37.408Z"
     },
     {
       "id": "REQ-3001",
@@ -1427,13 +1841,14 @@
       "guestName": "Arun Joshi",
       "roomId": "204",
       "requestType": "Extra Towels",
-      "status": "In Progress",
+      "status": "Completed",
       "timestamp": "2026-06-24T17:47:44.070Z",
       "comments": "Needs 2 extra pool towels desperately.",
       "category": "Housekeeping",
       "priority": "Medium",
       "assignedStaff": "Unassigned",
-      "createdTime": "2026-06-24T17:47:44.070Z"
+      "createdTime": "2026-06-24T17:47:44.070Z",
+      "completionTime": "2026-06-28T16:15:40.232Z"
     },
     {
       "id": "REQ-3003",
@@ -1441,12 +1856,12 @@
       "guestName": "John Doe",
       "roomId": "302",
       "requestType": "Late Checkout",
-      "status": "Accepted",
+      "status": "Assigned",
       "timestamp": "2026-06-24T18:17:44.070Z",
       "comments": "Requesting checkout at 2:00 PM due to evening flight departure.",
       "category": "Late Check-Out",
       "priority": "High",
-      "assignedStaff": "Unassigned",
+      "assignedStaff": "Rajesh Kumar (Front Desk)",
       "createdTime": "2026-06-24T18:17:44.070Z"
     }
   ],

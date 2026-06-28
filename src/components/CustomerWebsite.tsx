@@ -6,6 +6,12 @@
 
 import React, { useState, useEffect } from "react";
 import { RoomType, Room, Booking, BookingSource, BookingStatus, PaymentStatus } from "../types";
+import RoomCard from "./booking/RoomCard";
+import type { MultiRoomSelection } from "../utils/booking";
+import { calcNights as calcNightsFn } from "../utils/booking";
+
+
+
 import { 
   Coffee, Wifi, Tv, Thermometer, ShieldCheck, Phone, Mail, MapPin, 
   Sparkles, Check, ChevronRight, ChevronDown, AlertCircle, CreditCard, 
@@ -67,6 +73,35 @@ export default function CustomerWebsite({
   const [checkOut, setCheckOut] = useState<string>("2026-06-23");
   const [guestsCount, setGuestsCount] = useState<number>(2);
   const [selectedRoomTypeId, setSelectedRoomTypeId] = useState<string>("");
+
+  // Multi-room booking UI state (front-end only, payload structure unchanged)
+  const [multiRoomSelections, setMultiRoomSelections] = useState<MultiRoomSelection[]>([
+    {
+      id: `rm_${Date.now()}`,
+      roomTypeId: roomTypes[0]?.id || "",
+      roomId: undefined,
+      adults: 2,
+      children: 0,
+      rate: roomTypes[0]?.basePrice || 2200,
+    },
+  ]);
+
+  // Ensure room type/rate is in sync when roomTypes update (front-end only)
+  useEffect(() => {
+    setMultiRoomSelections((prev) =>
+      prev.length
+        ? prev.map((s) => {
+            const rt = roomTypes.find((r) => r.id === s.roomTypeId) || roomTypes[0];
+            if (!rt) return s;
+            return { ...s, roomTypeId: rt.id, rate: rt.basePrice };
+          })
+        : prev
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomTypes]);
+
+
+
   
   // Available categories result
   const [availabilityResults, setAvailabilityResults] = useState<{ [key: string]: number }>({});
@@ -178,6 +213,7 @@ export default function CustomerWebsite({
 
   // Recalculate room counts available per room type for selected dates
   const handleCheckAvailability = (e?: React.FormEvent) => {
+
     if (e) e.preventDefault();
     setIsCheckingDates(true);
     setErrorMessage("");
@@ -222,14 +258,13 @@ export default function CustomerWebsite({
 
   // Calculating pricing
   const getSelectedType = () => roomTypes.find(t => t.id === (selectedRoomTypeId || roomTypes[0].id));
-  const calcNights = () => {
-    const d1 = new Date(checkIn);
-    const d2 = new Date(checkOut);
-    const diffTime = Math.abs(d2.getTime() - d1.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return isNaN(diffDays) ? 1 : diffDays || 1;
-  };
   const getSelectedBasePrice = () => getSelectedType()?.basePrice || 2200;
+
+
+
+  const calcNights = () => calcNightsFn(checkIn, checkOut);
+
+
 
   // New Wizard-based comprehensive cost calculation helper
   const calculateGuestWizardCosts = () => {
@@ -383,14 +418,31 @@ export default function CustomerWebsite({
     const pendBalance = isAdvance ? totalCost - advAmount : 0;
 
     // Package the booking data for execution
+    const firstRoom = multiRoomSelections[0];
+    const legacyRoomTypeId = firstRoom?.roomTypeId || selectedRoomTypeId || roomTypes[0].id;
+    const legacyRoomId = firstRoom?.roomId ?? null;
+    const legacyNumberOfGuests = selectedBookingType === "Conference Hall Booking"
+      ? expectedAttendees
+      : (selectedBookingType === "Group Booking" ? groupNumGuests : (firstRoom?.adults ?? guestsCount));
+
+    const bookingRooms = (multiRoomSelections || []).map(r => ({
+      roomTypeId: r.roomTypeId,
+      roomId: r.roomId ?? undefined,
+      adults: r.adults,
+      children: r.children,
+      rate: r.rate,
+    }));
+
     const bookingPayload = {
       guestName: billingName,
       guestEmail,
       guestPhone,
-      roomTypeId: selectedRoomTypeId || roomTypes[0].id,
+      // Legacy compatibility fields (backend still uses these)
+      roomTypeId: legacyRoomTypeId,
+      roomId: legacyRoomId,
       checkInDate: selectedBookingType === "Conference Hall Booking" ? evtDate : checkIn,
       checkOutDate: selectedBookingType === "Conference Hall Booking" ? evtDate : checkOut,
-      numberOfGuests: selectedBookingType === "Conference Hall Booking" ? expectedAttendees : (selectedBookingType === "Group Booking" ? groupNumGuests : guestsCount),
+      numberOfGuests: legacyNumberOfGuests,
       totalPrice: totalCost,
       source: BookingSource.WEBSITE,
       notes: getCompiledWizardNotes(),
@@ -402,6 +454,8 @@ export default function CustomerWebsite({
       paymentOption: paymentSelection,
       advancePaid: advAmount,
       pendingBalance: pendBalance,
+      // New multi-room payload (architecture-only; not persisted yet)
+      bookingRooms,
       transport: requireTransport ? {
         vehicleType: selectedVehicle,
         pickupAddress: transportPickup,
@@ -416,8 +470,9 @@ export default function CustomerWebsite({
     setIsRazorpayOpen(true);
   };
 
-  // Razorpay Simulated Completion
+  // Payment confirmation completion
   const submitBookingPayment = async () => {
+
     setIsPaying(true);
     try {
       const transactionId = `pay_rzp_${Date.now().toString().slice(-6)}`;
@@ -461,10 +516,24 @@ export default function CustomerWebsite({
         setTransportDrop("");
         setShowResults(false);
       } else {
+        // HTTP 409: Room type sold out during confirmation (backend source of truth)
+        if (result?.status === 409 || result?.error?.toLowerCase().includes("no rooms of this type")) {
+          setErrorMessage(
+            "⚠ Room Type Sold Out\nNo rooms of the selected type are available for the selected dates.\nPlease choose another room type or different dates."
+          );
+          return;
+        }
         setErrorMessage(result.error || "Could not book. Check values.");
       }
-    } catch (err) {
-      setErrorMessage("Network error processing payment checkouts.");
+    } catch (err: any) {
+      const status = err?.status || err?.response?.status;
+      if (status === 409) {
+        setErrorMessage(
+          "⚠ Room Type Sold Out\nNo rooms of the selected type are available for the selected dates.\nPlease choose another room type or different dates."
+        );
+      } else {
+        setErrorMessage("Network error processing payment checkouts.");
+      }
     } finally {
       setIsPaying(false);
       setIsRazorpayOpen(false);
@@ -1332,58 +1401,107 @@ export default function CustomerWebsite({
                 
                 {/* 2A: ROOM BOOKING SPECIFIC FORM */}
                 {selectedBookingType === "Room Booking" && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Check-In</label>
-                      <input
-                        type="date"
-                        value={checkIn}
-                        onChange={(e) => {
-                          setCheckIn(e.target.value);
-                          setShowResults(false);
+                  <div className="flex flex-col gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Check-In</label>
+                        <input
+                          type="date"
+                          value={checkIn}
+                          onChange={(e) => {
+                            setCheckIn(e.target.value);
+                            setShowResults(false);
+                          }}
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Check-Out</label>
+                        <input
+                          type="date"
+                          value={checkOut}
+                          disabled={!checkIn}
+                          onChange={(e) => {
+                            setCheckOut(e.target.value);
+                            setShowResults(false);
+                          }}
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Multi-room cards */}
+                    <div className="flex flex-col gap-3">
+                      {multiRoomSelections.map((selection, idx) => {
+                        const rt = roomTypes.find(r => r.id === selection.roomTypeId);
+                        return (
+                          <RoomCard
+                            key={selection.id}
+                            selection={selection}
+                            roomType={rt}
+                            roomTypes={roomTypes}
+                            cardIndex={idx}
+                            disableRemove={multiRoomSelections.length <= 1}
+                            onChangeAdults={(adults) => {
+                              setMultiRoomSelections((prev) =>
+                                prev.map((s) => (s.id === selection.id ? { ...s, adults } : s))
+                              );
+                            }}
+                            onChangeChildren={(children) => {
+                              setMultiRoomSelections((prev) =>
+                                prev.map((s) => (s.id === selection.id ? { ...s, children } : s))
+                              );
+                            }}
+                            onChangeRoomTypeId={(roomTypeId) => {
+                              const rtForId = roomTypes.find((r) => r.id === roomTypeId);
+                              setMultiRoomSelections((prev) =>
+                                prev.map((s) =>
+                                  s.id === selection.id
+                                    ? {
+                                        ...s,
+                                        roomTypeId,
+                                        rate: rtForId?.basePrice ?? s.rate,
+                                      }
+                                    : s
+                                )
+                              );
+                            }}
+                            onRemove={() => {
+                              setMultiRoomSelections((prev) => prev.filter((s) => s.id !== selection.id));
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* Add Room button */}
+                    <div className="flex justify-start">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const firstRoomType = roomTypes[0];
+                          if (!firstRoomType) return;
+
+                          setMultiRoomSelections(prev => [
+                            ...prev,
+                            {
+                              id: `rm_${Date.now()}`,
+                              roomTypeId: firstRoomType.id,
+                              roomId: undefined,
+                              adults: 2,
+                              children: 0,
+                            rate: firstRoomType.basePrice,
+                            },
+                          ]);
                         }}
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Check-Out</label>
-                      <input
-                        type="date"
-                        value={checkOut}
-                        disabled={!checkIn}
-                        onChange={(e) => {
-                          setCheckOut(e.target.value);
-                          setShowResults(false);
-                        }}
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5 font-bold">Room Type</label>
-                      <select
-                        value={selectedRoomTypeId}
-                        onChange={(e) => setSelectedRoomTypeId(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium"
+                        className="px-5 py-2.5 bg-amber-500 text-slate-950 font-bold hover:bg-amber-600 hover:text-white rounded-lg text-xs flex items-center gap-2 cursor-pointer shadow-md"
                       >
-                        {roomTypes.map(r => (
-                          <option key={r.id} value={r.id}>{r.name} (₹{r.basePrice}/Night)</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Total Guests</label>
-                      <select
-                        value={guestsCount}
-                        onChange={(e) => setGuestsCount(Number(e.target.value))}
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium"
-                      >
-                        {[1, 2, 3, 4].map(n => (
-                          <option key={n} value={n}>{n} Guest{n > 1 ? "s" : ""}</option>
-                        ))}
-                      </select>
+                        + Add Room
+                      </button>
                     </div>
                   </div>
                 )}
+
 
                 {/* 2B: CONFERENCE HALL BOOKING SPECIFIC FORM */}
                 {selectedBookingType === "Conference Hall Booking" && (
@@ -1622,66 +1740,67 @@ export default function CustomerWebsite({
                   </div>
                 )}
 
-                {/* Lead Coordinator / Billing Profile Contact */}
-                <div className="bg-slate-50 dark:bg-slate-950/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider font-mono text-amber-600 dark:text-amber-400">Primary Booking Contact</h4>
-                  <p className="text-[11px] text-slate-400 -mt-2 leading-relaxed">Provide email and mobile credentials to receive digital web check-in tokens and text confirmation.</p>
-                  
-                  {selectedBookingType !== "Corporate Booking" && selectedBookingType !== "Group Booking" && (
-                    <div>
-                      <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1">Lead Guest Full Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={guestName}
-                        onChange={(e) => setGuestName(e.target.value)}
-                        placeholder="Bijay Mohapatra"
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-805 dark:text-slate-100"
-                      />
-                    </div>
-                  )}
+              {/* Lead Coordinator / Billing Profile Contact */}
+              <div className="bg-slate-50 dark:bg-slate-950/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider font-mono text-amber-600 dark:text-amber-400">Primary Booking Contact</h4>
+                <p className="text-[11px] text-slate-400 -mt-2 leading-relaxed">Provide email and mobile credentials to receive digital web check-in tokens and text confirmation.</p>
+                
+                {selectedBookingType !== "Corporate Booking" && selectedBookingType !== "Group Booking" && (
+                  <div>
+                    <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1">Lead Guest Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      placeholder="Bijay Mohapatra"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-805 dark:text-slate-100"
+                    />
+                  </div>
+                )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1 font-bold">Email Address</label>
-                      <input
-                        type="email"
-                        required
-                        value={guestEmail}
-                        onChange={(e) => setGuestEmail(e.target.value)}
-                        placeholder="coordinator@domain.com"
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1 font-bold">Mobile Phone No</label>
-                      <input
-                        type="tel"
-                        required
-                        value={guestPhone}
-                        onChange={(e) => setGuestPhone(e.target.value)}
-                        placeholder="+91 94370 22011"
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100"
-                      />
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1 font-bold">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      placeholder="coordinator@domain.com"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100"
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1 font-semibold">Special Requests (Optional)</label>
-                    <textarea
-                      rows={2}
-                      value={specialNotes}
-                      onChange={(e) => setSpecialNotes(e.target.value)}
-                      placeholder="Requesting specific room blocks, food preferences, senior assistance, early check-in, etc."
-                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 resize-none"
-                    ></textarea>
+                    <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1 font-bold">Mobile Phone No</label>
+                    <input
+                      type="tel"
+                      required
+                      value={guestPhone}
+                      onChange={(e) => setGuestPhone(e.target.value)}
+                      placeholder="+91 94370 22011"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100"
+                    />
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 uppercase mb-1 font-semibold">Special Requests (Optional)</label>
+                  <textarea
+                    rows={2}
+                    value={specialNotes}
+                    onChange={(e) => setSpecialNotes(e.target.value)}
+                    placeholder="Requesting specific room blocks, food preferences, senior assistance, early check-in, etc."
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 resize-none"
+                  ></textarea>
+                </div>
+              </div>
 
               </div>
 
               <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-850 flex justify-between items-center">
+
                 <button
                   type="button"
                   onClick={() => setWizardStep(1)}
@@ -1962,9 +2081,10 @@ export default function CustomerWebsite({
                       <div className="col-span-2"><span className="text-slate-404 block font-mono">SCHEDULE ARRIVAL WINDOW:</span> <span className="font-bold text-slate-800 dark:text-slate-205">{transportDate} at {transportTime} hrs</span></div>
                     </div>
                   ) : (
-                    <div className="text-center py-4 bg-slate-50 dark:bg-slate-950 rounded-xl text-xs text-slate-500 dark:text-slate-400">
-                      No custom transport transfers included in your guest profile. You can always arrange local cabs later at check-in.
+                  <div className="text-center py-4 bg-slate-50 dark:bg-slate-950 rounded-xl text-xs text-slate-500 dark:text-slate-400">
+                      No transport transfers selected. You can arrange local cabs later at check-in.
                     </div>
+
                   )}
                 </div>
               </div>
@@ -2057,9 +2177,10 @@ export default function CustomerWebsite({
                         <span className="text-[12px] font-mono font-bold mt-1 text-slate-900 dark:text-white">
                           ₹{calculateGuestWizardCosts().total.toLocaleString()}
                         </span>
-                      </button>
-                      
-                      <button
+                    </button>
+
+                    <button
+
                         type="button"
                         onClick={() => setPaymentSelection("Advance")}
                         className={`p-2.5 rounded-lg border text-left flex flex-col justify-between transition-all cursor-pointer ${
@@ -2097,8 +2218,9 @@ export default function CustomerWebsite({
                       onClick={handleProceedToPayment}
                       className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 hover:text-white font-extrabold rounded-xl text-xs uppercase tracking-wider shadow-lg hover:shadow-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      <CreditCard className="w-4 h-4" /> Secure Sandbox Gateway
+                      <CreditCard className="w-4 h-4" /> Secure payment gateway
                     </button>
+
                     
                     <button
                       type="button"
@@ -2109,11 +2231,7 @@ export default function CustomerWebsite({
                     </button>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-dashed border-slate-200 dark:border-slate-800">
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-relaxed text-center font-mono uppercase">
-                      Niladri PMS secure processing terminal. Fake bank simulated.
-                    </p>
-                  </div>
+
                 </div>
               </div>
 
@@ -2203,22 +2321,25 @@ export default function CustomerWebsite({
                   <div className="bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-lg flex items-center gap-1.5">
                     <span className="text-emerald-500">📧</span>
                     <div>
-                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 block">Email Dispatched</span>
-                      <span className="text-[8px] text-slate-400 block font-mono">Status: Simulated</span>
+                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 block">Email Sent</span>
+                      <span className="text-[8px] text-slate-400 block font-mono">Status: Queued</span>
+
                     </div>
                   </div>
                   <div className="bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-lg flex items-center gap-1.5">
                     <span className="text-emerald-500">💬</span>
                     <div>
-                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 block">WhatsApp Queued</span>
-                      <span className="text-[8px] text-slate-400 block font-mono">Status: Simulated</span>
+                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 block">WhatsApp Sent</span>
+                      <span className="text-[8px] text-slate-400 block font-mono">Status: Delivered</span>
                     </div>
+
                   </div>
                 </div>
               </div>
 
               <div className="mt-8 flex justify-center gap-4">
                 <button
+                  type="button"
                   onClick={() => {
                     setBookingConfirmation(null);
                     setWizardStep(1);
@@ -2628,7 +2749,9 @@ export default function CustomerWebsite({
                   ) : (
                     <form
                       onSubmit={(e) => {
+                        // Hard guarantee: never allow native submit navigation/refresh.
                         e.preventDefault();
+                        e.stopPropagation();
                         if (!destTransportDate || !destTransportTime || !destTransportRoomNo) return;
                         setDestTransportSubmitted(true);
                       }}
@@ -2818,7 +2941,8 @@ export default function CustomerWebsite({
                 </div>
               </div>
 
-              {/* Simulated Map coordinates visual panel */}
+              {/* Map coordinates visual panel */}
+
               <div className="h-[240px] bg-slate-950 rounded-2xl relative overflow-hidden border border-slate-800 flex items-center justify-center text-center">
                 <div className="absolute inset-0 opacity-20">
                   <img 
@@ -2863,7 +2987,8 @@ export default function CustomerWebsite({
             {/* Content Body */}
             <div className="p-5 flex flex-col gap-4 text-xs font-mono">
               <div className="bg-[#13192f] p-3 rounded-lg border border-white/5">
-                <div className="text-blue-300 font-bold mb-1.5 uppercase text-[10px] tracking-wide">Razorpay Checkout Sandbox</div>
+                <div className="text-blue-300 font-bold mb-1.5 uppercase text-[10px] tracking-wide">Secure Payment Checkout</div>
+
                 <div className="flex flex-col gap-1 text-stone-300">
                   <div className="flex justify-between"><span>Service Name:</span><span className="text-white">Suite Booking</span></div>
                   <div className="flex justify-between"><span>Billing Guest:</span><span className="text-white">{guestName}</span></div>
@@ -2872,32 +2997,34 @@ export default function CustomerWebsite({
               </div>
 
               <div className="border border-white/5 rounded-lg p-3 bg-[#181f37] flex flex-col gap-2">
-                <span className="text-[10px] text-stone-400">SELECT PAYMENT SIMULATOR MODE</span>
+                <span className="text-[10px] text-stone-400">Confirm and proceed with payment</span>
                 <button
                   type="button"
                   onClick={submitBookingPayment}
                   disabled={isPaying}
                   className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold transition-all disabled:opacity-50 cursor-pointer"
                 >
-                  {isPaying ? "Verifying Transaction..." : "Simulate Success Card Transfer"}
+                  {isPaying ? "Processing payment..." : "Pay now"}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setErrorMessage("Razorpay simulator: User pressed cancel. Payment declined.");
+                    setErrorMessage("Payment cancelled.");
                     setIsRazorpayOpen(false);
                   }}
                   className="w-full py-1.5 bg-red-950/40 hover:bg-red-950 border border-red-950/80 text-red-200/90 rounded text-[11px] transition-colors"
                 >
-                  Cancel & Decline
+                  Cancel
                 </button>
               </div>
+
             </div>
 
             {/* Footer lock */}
             <div className="bg-[#13192f] py-3.5 px-5 text-center text-[10px] text-stone-400/80 flex items-center justify-center gap-1">
-              <span>🛡 SECURE CONNECTION BY RAZORPAY</span>
+              <span>Secure connection</span>
             </div>
+
           </div>
         </div>
       )}

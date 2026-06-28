@@ -134,12 +134,17 @@ export default function ECheckInPortal({
   // Submit check-in details
   const handleCheckinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!activeBooking?.roomId) {
+      setErrorText("Please assign a room before checking in this guest.");
+      return;
+    }
     if (!idNumber) {
       setErrorText("Please state your ID card identification serial number.");
       return;
     }
     setErrorText("");
     setIsUploading(true);
+
 
     try {
       const payload = {
@@ -627,21 +632,37 @@ export default function ECheckInPortal({
                   </div>
                 )}
 
-                <div className="mt-4 pt-4 border-t border-slate-150 dark:border-slate-800 flex justify-between items-center">
-                  <button
-                    type="button"
-                    onClick={() => setActiveBooking(null)}
-                    className="text-xs text-slate-500 hover:underline font-semibold cursor-pointer"
-                  >
-                    Change Reservation Code
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isUploading}
-                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
-                  >
-                    {isUploading ? "Uploading Proof Package..." : "Finalize Digital Check-In"}
-                  </button>
+                <div className="mt-4 pt-4 border-t border-slate-150 dark:border-slate-800 flex flex-col gap-3 items-start">
+                  {!activeBooking?.roomId && (
+                    <div className="w-full bg-amber-50/70 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="font-extrabold text-[11px] uppercase tracking-wider">⚠ Room Assignment Required</div>
+                        <div className="font-sans text-[11px] mt-0.5">Please assign a room before checking in this guest.</div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="w-full flex justify-between items-center">
+                    <button
+                      type="button"
+                      onClick={() => setActiveBooking(null)}
+                      className="text-xs text-slate-500 hover:underline font-semibold cursor-pointer"
+                    >
+                      Change Reservation Code
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isUploading || !activeBooking?.roomId}
+                      className={`px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 cursor-pointer font-bold text-xs ${
+                        isUploading || !activeBooking?.roomId
+                          ? "bg-slate-300 text-slate-500 cursor-not-allowed opacity-80"
+                          : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      }`}
+                    >
+                      {isUploading ? "Uploading Proof Package..." : "Finalize Digital Check-In"}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -651,3 +672,6 @@ export default function ECheckInPortal({
     </div>
   );
 }
+
+
+

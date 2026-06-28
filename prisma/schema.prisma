@@ -1,16 +1,396 @@
-// Prisma schema - Hospitality PMS (multi-tenant)
-// PostgreSQL + Prisma 7
-// UUID primary keys
-// Decimal for all money fields
-// Enums for all statuses
-// Soft delete where appropriate
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model Tenant {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String       @unique
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  auditLogs   AuditLog[]
+  hotels      Hotel[]
+  permissions Permission[]
+  roles       Role[]
+  staff       Staff[]
+  users       User[]
+
+  @@index([isActive])
+}
+
+model Hotel {
+  id            String         @id @default(uuid()) @db.Uuid
+  tenantId      String         @db.Uuid
+  name          String
+  code          String
+  address       String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  auditLogs     AuditLog[]
+  bookings      Booking[]
+  bookingGuests BookingGuest[]
+  bookingRooms  BookingRoom[]
+  guests        Guest[]
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  settings      HotelSettings?
+  inventory     Inventory[]
+  invoices      Invoice[]
+  rooms         Room[]
+  amenities     RoomAmenity[]
+  roomTypes     RoomType[]
+  staff         Staff[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+model HotelSettings {
+  id             String    @id @default(uuid()) @db.Uuid
+  hotelId        String    @unique @db.Uuid
+  currency       String    @default("INR")
+  taxRate        Decimal   @default(0)
+  checkInTime    String?
+  checkOutTime   String?
+  notes          String?
+  logo           String?
+  email          String?
+  phone          String?
+  website        String?
+  themeColor     String?
+  checkInPolicy  String?
+  checkOutPolicy String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  hotel          Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+  id          String       @id @default(uuid()) @db.Uuid
+  tenantId    String       @db.Uuid
+  name        RoleName
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  permissions Permission[]
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  staff       Staff[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Permission {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  roleId    String    @db.Uuid
+  key       String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  role      Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@unique([roleId, key])
+  @@index([tenantId])
+  @@index([roleId])
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  tenantId     String     @db.Uuid
+  email        String     @unique
+  username     String?
+  status       UserStatus @default(ACTIVE)
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+  auditLogs    AuditLog[]
+  staff        Staff?
+  tenant       Tenant     @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, status])
+}
+
+model Staff {
+  id        String     @id @default(uuid()) @db.Uuid
+  tenantId  String     @db.Uuid
+  hotelId   String     @db.Uuid
+  roleId    String     @db.Uuid
+  userId    String?    @unique @db.Uuid
+  fullName  String
+  email     String?
+  phone     String?
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+  auditLogs AuditLog[]
+  hotel     Hotel      @relation(fields: [hotelId], references: [id])
+  role      Role       @relation(fields: [roleId], references: [id])
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  user      User?      @relation(fields: [userId], references: [id])
+
+  @@index([hotelId, roleId])
+  @@index([tenantId, status])
+}
+
+model RoomType {
+  id           String        @id @default(uuid()) @db.Uuid
+  hotelId      String        @db.Uuid
+  name         String
+  description  String?
+  basePrice    Decimal
+  maxGuests    Int
+  status       RoomStatus    @default(AVAILABLE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+  bookingRooms BookingRoom[]
+  inventory    Inventory[]
+  rooms        Room[]
+  amenities    RoomAmenity[]
+  hotel        Hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@unique([hotelId, name])
+  @@index([hotelId, status])
+}
+
+model Room {
+  id               String        @id @default(uuid()) @db.Uuid
+  hotelId          String        @db.Uuid
+  roomTypeId       String        @db.Uuid
+  roomNumber       String
+  floor            String?
+  status           RoomStatus    @default(AVAILABLE)
+  capacityAdults   Int           @default(0)
+  capacityChildren Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?
+  bookingRooms     BookingRoom[]
+  inventory        Inventory[]
+  hotel            Hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomType         RoomType      @relation(fields: [roomTypeId], references: [id])
+
+  @@unique([hotelId, roomNumber])
+  @@index([hotelId, roomTypeId, status])
+}
+
+model RoomAmenity {
+  id          String    @id @default(uuid()) @db.Uuid
+  hotelId     String    @db.Uuid
+  roomTypeId  String?   @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  hotel       Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomType    RoomType? @relation(fields: [roomTypeId], references: [id])
+
+  @@index([hotelId, roomTypeId])
+}
+
+model Inventory {
+  id           String          @id @default(uuid()) @db.Uuid
+  hotelId      String          @db.Uuid
+  roomId       String?         @db.Uuid
+  roomTypeId   String          @db.Uuid
+  date         DateTime
+  status       InventoryStatus @default(AVAILABLE)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
+  hotel        Hotel           @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  room         Room?           @relation(fields: [roomId], references: [id])
+  roomType     RoomType        @relation(fields: [roomTypeId], references: [id])
+  bookingRooms BookingRoom[]   @relation("BookingRoomToInventory")
+
+  @@unique([hotelId, roomId, date])
+  @@index([hotelId, roomTypeId, date])
+}
+
+model Guest {
+  id            String         @id @default(uuid()) @db.Uuid
+  hotelId       String         @db.Uuid
+  firstName     String
+  lastName      String?
+  email         String?
+  phone         String?
+  nationality   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  bookingGuests BookingGuest[]
+  hotel         Hotel          @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@index([hotelId, firstName, lastName])
+  @@index([hotelId, phone])
+}
+
+model Booking {
+  id            String         @id @default(uuid()) @db.Uuid
+  hotelId       String         @db.Uuid
+  status        BookingStatus  @default(DRAFT)
+  bookingType   String?
+  bookingNumber String         @unique
+  checkInDate   DateTime
+  checkOutDate  DateTime
+  totalAmount   Decimal        @default(0)
+  currency      String         @default("INR")
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  auditLogs     AuditLog[]
+  hotel         Hotel          @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  bookingGuests BookingGuest[]
+  bookingRooms  BookingRoom[]
+  invoice       Invoice?
+
+  @@index([hotelId, status, checkInDate])
+}
+
+model BookingRoom {
+  id            String         @id @default(uuid()) @db.Uuid
+  bookingId     String         @db.Uuid
+  hotelId       String         @db.Uuid
+  roomTypeId    String         @db.Uuid
+  roomId        String?        @db.Uuid
+  quantity      Int            @default(1)
+  ratePerNight  Decimal        @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  bookingGuests BookingGuest[]
+  booking       Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  hotel         Hotel          @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  room          Room?          @relation(fields: [roomId], references: [id])
+  roomType      RoomType       @relation(fields: [roomTypeId], references: [id])
+  inventory     Inventory[]    @relation("BookingRoomToInventory")
+
+  @@index([bookingId])
+  @@index([hotelId, roomTypeId])
+}
+
+model BookingGuest {
+  id            String       @id @default(uuid()) @db.Uuid
+  bookingId     String       @db.Uuid
+  hotelId       String       @db.Uuid
+  guestId       String       @db.Uuid
+  bookingRoomId String?      @db.Uuid
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?
+  booking       Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingRoom   BookingRoom? @relation(fields: [bookingRoomId], references: [id])
+  guest         Guest        @relation(fields: [guestId], references: [id])
+  hotel         Hotel        @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, guestId])
+  @@index([hotelId])
+}
+
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  bookingId     String        @unique @db.Uuid
+  hotelId       String        @db.Uuid
+  status        InvoiceStatus @default(DRAFT)
+  invoiceNumber String        @unique
+  subtotal      Decimal       @default(0)
+  taxAmount     Decimal       @default(0)
+  totalAmount   Decimal       @default(0)
+  currency      String        @default("INR")
+  issuedAt      DateTime?
+  dueAt         DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+  auditLogs     AuditLog[]
+  booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  hotel         Hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  items         InvoiceItem[]
+  payments      Payment[]
+
+  @@index([hotelId, status])
+}
+
+model InvoiceItem {
+  id          String    @id @default(uuid()) @db.Uuid
+  invoiceId   String    @db.Uuid
+  lineType    String
+  description String
+  unitPrice   Decimal   @default(0)
+  quantity    Int       @default(1)
+  amount      Decimal   @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  invoice     Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, lineType])
+}
+
+model Payment {
+  id               String        @id @default(uuid()) @db.Uuid
+  invoiceId        String        @db.Uuid
+  status           PaymentStatus @default(PENDING)
+  method           PaymentMethod
+  transactionId    String?
+  gateway          String?
+  gatewayReference String?
+  amount           Decimal       @default(0)
+  currency         String        @default("INR")
+  paidAt           DateTime?
+  reference        String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?
+  auditLogs        AuditLog[]
+  invoice          Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, status])
+}
+
+model AuditLog {
+  id           String         @id @default(uuid()) @db.Uuid
+  tenantId     String         @db.Uuid
+  hotelId      String         @db.Uuid
+  action       AuditLogAction
+  entityType   String
+  entityId     String?
+  message      String?
+  metadata     Json?
+  actorUserId  String?        @db.Uuid
+  actorStaffId String?        @db.Uuid
+  bookingId    String?        @db.Uuid
+  invoiceId    String?        @db.Uuid
+  paymentId    String?        @db.Uuid
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  actorStaff   Staff?         @relation(fields: [actorStaffId], references: [id])
+  actorUser    User?          @relation(fields: [actorUserId], references: [id])
+  booking      Booking?       @relation(fields: [bookingId], references: [id])
+  hotel        Hotel          @relation(fields: [hotelId], references: [id])
+  invoice      Invoice?       @relation(fields: [invoiceId], references: [id])
+  payment      Payment?       @relation(fields: [paymentId], references: [id])
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, hotelId, createdAt])
+  @@index([hotelId, action])
 }
 
 enum UserStatus {
@@ -81,486 +461,3 @@ enum AuditLogAction {
   LOGOUT
   STATUS_CHANGE
 }
-
-model Tenant {
-  id          String         @id @default(uuid()) @db.Uuid
-  name        String
-  slug        String         @unique
-  isActive    Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?
-
-  hotels      Hotel[]
-  roles       Role[]
-  users       User[]
-  staff        Staff[]
-  permissions Permission[]
-  auditLogs   AuditLog[]
-
-  @@index([isActive])
-}
-
-
-model Hotel {
-  id           String          @id @default(uuid()) @db.Uuid
-  tenantId     String          @db.Uuid
-  name         String
-  code         String
-  address      String?
-  isActive     Boolean         @default(true)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  deletedAt    DateTime?
-
-  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-
-  settings     HotelSettings?
-
-  roomTypes    RoomType[]
-  rooms        Room[]
-  amenities    RoomAmenity[]
-
-  guests       Guest[]
-  bookings     Booking[]
-
-  staff        Staff[]
-
-  invoices     Invoice[]
-
-  inventory    Inventory[]
-
-  bookingRooms BookingRoom[]
-  bookingGuests BookingGuest[]
-  auditLogs    AuditLog[]
-
-  @@unique([tenantId, code])
-  @@index([tenantId])
-  @@index([isActive])
-}
-
-
-model HotelSettings {
-  id             String    @id @default(uuid()) @db.Uuid
-  hotelId        String    @unique @db.Uuid
-  currency       String    @default("INR")
-  taxRate         Decimal   @default(0)
-  checkInTime     String?
-  checkOutTime    String?
-  notes           String?
-  logo            String?
-  email           String?
-  phone           String?
-  website         String?
-  themeColor     String?
-  checkInPolicy   String?
-  checkOutPolicy  String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
-
-  hotel          Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-}
-
-
-model Role {
-  id          String     @id @default(uuid()) @db.Uuid
-  tenantId    String     @db.Uuid
-  name        RoleName
-  description String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  deletedAt   DateTime?
-
-  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-
-  permissions Permission[]
-  staff        Staff[]
-
-  @@unique([tenantId, name])
-  @@index([tenantId])
-}
-
-model Permission {
-  id        String   @id @default(uuid()) @db.Uuid
-  tenantId  String   @db.Uuid
-  roleId    String   @db.Uuid
-  key       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@unique([roleId, key])
-  @@index([tenantId])
-  @@index([roleId])
-}
-
-model User {
-  id          String     @id @default(uuid()) @db.Uuid
-  tenantId    String     @db.Uuid
-  email       String     @unique
-  username    String?
-  status      UserStatus @default(ACTIVE)
-  passwordHash String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  deletedAt   DateTime?
-
-  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-
-  auditLogs   AuditLog[]
-  staff        Staff?
-
-  @@index([tenantId, status])
-}
-
-
-model Staff {
-  id          String    @id @default(uuid()) @db.Uuid
-  tenantId    String    @db.Uuid
-  hotelId     String    @db.Uuid
-  roleId      String    @db.Uuid
-  userId      String?   @unique @db.Uuid
-
-  fullName    String
-  email        String?
-  phone        String?
-
-  status       UserStatus @default(ACTIVE)
-
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
-
-  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  hotel        Hotel     @relation(fields: [hotelId], references: [id], onDelete: Restrict)
-  role         Role      @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  auditLogs    AuditLog[]
-
-  @@index([hotelId, roleId])
-  @@index([tenantId, status])
-}
-
-
-model RoomType {
-  id          String     @id @default(uuid()) @db.Uuid
-  hotelId     String     @db.Uuid
-  name        String
-  description String?
-
-  basePrice   Decimal
-  maxGuests   Int
-
-  status      RoomStatus @default(AVAILABLE)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  deletedAt   DateTime?
-
-  hotel       Hotel      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-
-  rooms       Room[]
-  amenities   RoomAmenity[]
-  inventory   Inventory[]
-
-  bookingRooms BookingRoom[]
-
-  @@unique([hotelId, name])
-  @@index([hotelId, status])
-}
-
-model Room {
-  id          String     @id @default(uuid()) @db.Uuid
-  hotelId     String     @db.Uuid
-  roomTypeId  String     @db.Uuid
-
-  roomNumber  String
-  floor        String?
-  status       RoomStatus @default(AVAILABLE)
-
-  capacityAdults   Int @default(0)
-  capacityChildren Int @default(0)
-
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  deletedAt   DateTime?
-
-  hotel       Hotel      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  roomType    RoomType   @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
-
-  inventory   Inventory[]
-
-  bookingRooms BookingRoom[]
-
-  @@unique([hotelId, roomNumber])
-  @@index([hotelId, roomTypeId, status])
-}
-
-
-model RoomAmenity {
-  id          String    @id @default(uuid()) @db.Uuid
-  hotelId     String    @db.Uuid
-  roomTypeId  String?   @db.Uuid
-
-  name        String
-  description String?
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
-
-  hotel       Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  roomType    RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
-
-  @@index([hotelId, roomTypeId])
-}
-
-model Inventory {
-  id           String            @id @default(uuid()) @db.Uuid
-  hotelId      String            @db.Uuid
-  roomId       String?          @db.Uuid
-  roomTypeId   String           @db.Uuid
-
-  date         DateTime         // use date-only semantics in application
-  status       InventoryStatus  @default(AVAILABLE)
-
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  deletedAt    DateTime?
-
-  hotel        Hotel            @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  room         Room?            @relation(fields: [roomId], references: [id], onDelete: SetNull)
-  roomType     RoomType        @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
-
-  bookingRooms BookingRoom[]
-
-  @@unique([hotelId, roomId, date])
-  @@index([hotelId, roomTypeId, date])
-}
-
-model Guest {
-  id          String    @id @default(uuid()) @db.Uuid
-  hotelId     String    @db.Uuid
-
-  firstName   String
-  lastName    String?
-  email       String?
-  phone       String?
-  nationality String?
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
-
-  hotel       Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-
-  bookingGuests BookingGuest[]
-
-  @@index([hotelId, firstName, lastName])
-  @@index([hotelId, phone])
-}
-
-
-model Booking {
-  id            String         @id @default(uuid()) @db.Uuid
-  hotelId       String         @db.Uuid
-
-  status        BookingStatus  @default(DRAFT)
-  bookingType   String?        // e.g. "Room Booking", "Conference Hall", etc.
-  bookingNumber String        @unique
-
-  checkInDate   DateTime
-  checkOutDate  DateTime
-
-  totalAmount   Decimal        @default(0)
-  currency      String         @default("INR")
-
-  notes          String?
-
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
-
-  hotel         Hotel          @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-
-  bookingRooms  BookingRoom[]
-  bookingGuests BookingGuest[]
-
-  invoice        Invoice?
-
-  auditLogs      AuditLog[]
-
-  @@index([hotelId, status, checkInDate])
-}
-
-
-model BookingRoom {
-  id          String   @id @default(uuid()) @db.Uuid
-  bookingId   String   @db.Uuid
-  hotelId     String   @db.Uuid
-
-  roomTypeId  String   @db.Uuid
-  roomId      String?  @db.Uuid
-
-  quantity    Int      @default(1) // in case of bundled rooms
-  ratePerNight Decimal @default(0)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  roomType    RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
-  room        Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
-
-  bookingGuests BookingGuest[]
-  inventory     Inventory[]
-
-  @@index([bookingId])
-  @@index([hotelId, roomTypeId])
-}
-
-model BookingGuest {
-  id          String   @id @default(uuid()) @db.Uuid
-  bookingId   String   @db.Uuid
-  hotelId     String   @db.Uuid
-
-  guestId     String   @db.Uuid
-  bookingRoomId String? @db.Uuid
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-
-  booking     Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  hotel       Hotel        @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  guest       Guest        @relation(fields: [guestId], references: [id], onDelete: Restrict)
-  bookingRoom BookingRoom? @relation(fields: [bookingRoomId], references: [id], onDelete: SetNull)
-
-  @@index([bookingId, guestId])
-  @@index([hotelId])
-}
-
-model Invoice {
-  id          String        @id @default(uuid()) @db.Uuid
-  bookingId   String        @unique @db.Uuid
-  hotelId     String        @db.Uuid
-
-  status      InvoiceStatus @default(DRAFT)
-  invoiceNumber String     @unique
-
-  subtotal    Decimal       @default(0)
-  taxAmount   Decimal       @default(0)
-  totalAmount Decimal       @default(0)
-  currency    String        @default("INR")
-
-  issuedAt    DateTime?
-  dueAt       DateTime?
-
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  deletedAt    DateTime?
-
-  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  hotel       Hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-
-  items       InvoiceItem[]
-  payments    Payment[]
-
-  auditLogs   AuditLog[]
-
-  @@index([hotelId, status])
-}
-
-
-model InvoiceItem {
-  id          String   @id @default(uuid()) @db.Uuid
-  invoiceId   String   @db.Uuid
-
-  lineType    String   // e.g. "ROOM", "CATERING", "TRANSPORT", etc.
-  description String
-
-  unitPrice   Decimal  @default(0)
-  quantity    Int       @default(1)
-  amount      Decimal  @default(0)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId, lineType])
-}
-
-model Payment {
-  id          String        @id @default(uuid()) @db.Uuid
-  invoiceId   String        @db.Uuid
-
-  status      PaymentStatus @default(PENDING)
-  method      PaymentMethod
-
-  transactionId     String?
-  gateway           String?
-  gatewayReference String?
-
-  amount      Decimal       @default(0)
-  currency    String        @default("INR")
-
-  paidAt      DateTime?
-  reference   String?
-
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  deletedAt    DateTime?
-
-  invoice     Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  auditLogs   AuditLog[]
-
-  @@index([invoiceId, status])
-}
-
-
-model AuditLog {
-  id           String           @id @default(uuid()) @db.Uuid
-  tenantId     String           @db.Uuid
-  hotelId      String           @db.Uuid
-
-  action       AuditLogAction
-  entityType   String
-  entityId     String?
-
-  message      String?
-  metadata     Json?
-
-  actorUserId   String?         @db.Uuid
-  actorStaffId  String?         @db.Uuid
-
-  bookingId    String?         @db.Uuid
-  invoiceId    String?         @db.Uuid
-  paymentId    String?         @db.Uuid
-
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  deletedAt     DateTime?
-
-  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  hotel         Hotel           @relation(fields: [hotelId], references: [id], onDelete: Restrict)
-
-  actorUser     User?           @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
-  actorStaff    Staff?          @relation(fields: [actorStaffId], references: [id], onDelete: SetNull)
-
-  booking       Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  invoice       Invoice?        @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
-  payment       Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-
-  @@index([tenantId, hotelId, createdAt])
-  @@index([hotelId, action])
-}
-

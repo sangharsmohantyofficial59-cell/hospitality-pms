@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import CustomerHeader from "./components/CustomerHeader";
 import CustomerFooter from "./components/CustomerFooter";
 import CustomerWebsite from "./components/CustomerWebsite";
@@ -35,6 +35,11 @@ import { ROUTES, STAFF_SESSION_KEYS, USER_ROLES, STAFF_TAB_IDS } from "./config/
 
 export default function App() {
   const DEV_MODE = false;
+
+  // Guard: session restoration runs only once at startup, not on every fetchState() refresh
+  const hasInitializedSession = useRef(false);
+  // Guard: isLoading is only relevant for the very first data load
+  const isFirstLoad = useRef(true);
 
   // Subdomain & Path routing states
   const [route, setRoute] = useState<string>(() => {
@@ -154,7 +159,13 @@ export default function App() {
     } catch (err) {
       console.error("Connect error in fetching state:", err);
     } finally {
-      setIsLoading(false);
+      // Only mark loading done on the very first fetch.
+      // Subsequent calls (after mutations) must NOT touch isLoading —
+      // otherwise the session useEffect re-fires and resets adminTab.
+      if (isFirstLoad.current) {
+        isFirstLoad.current = false;
+        setIsLoading(false);
+      }
     }
   };
 
@@ -366,8 +377,14 @@ export default function App() {
 
 
   // On App startup: restore session and protect /ops and /owner.
+  // IMPORTANT: This effect must ONLY run once at startup (guarded by hasInitializedSession).
+  // It must NOT re-run on every fetchState() call, otherwise adminTab gets reset to the
+  // default landing tab after every booking / payment / room-assignment action.
   useEffect(() => {
     if (isLoading) return;
+    // Already initialized — do not re-run session logic on subsequent data refreshes.
+    if (hasInitializedSession.current) return;
+    hasInitializedSession.current = true;
 
     const stored = getStoredSession();
     const isProtectedRoute = route === "ops" || route === "owner";
@@ -376,7 +393,7 @@ export default function App() {
       setIsStaffLoggedIn(true);
       setStaffUser({ username: stored.username, role: stored.role });
 
-      // default landing tab inside staff console
+      // Set default landing tab only on the very first app boot, not on data refresh.
       setAdminTab(route === "ops" ? "serviceCenter" : "ownerDashboard");
 
       // If user is on public landing but has an active session, open correct protected route.
