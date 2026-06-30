@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("postgresql://postgres:Shann%401902@localhost:5432/hospitality_pms")
 }
 
 model Tenant {
