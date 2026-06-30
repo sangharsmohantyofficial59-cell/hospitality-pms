@@ -11,6 +11,8 @@ import { RoomStatus, BookingStatus, PaymentStatus, BookingSource, Booking, Room,
 import { INITIAL_ROOMS, INITIAL_ROOM_TYPES, INITIAL_GUESTS, INITIAL_BOOKINGS, INITIAL_PAYMENTS, INITIAL_NOTIFICATIONS } from "./src/data/initialData";
 import { messageLogs, setMessageLogs, sendNotificationEvents } from "./src/services/notificationService";
 import { ActivityLogService } from "./server/services/ActivityLogService";
+import { GuestService } from "./server/services/GuestService";
+import { RoomService } from "./server/services/RoomService";
 
 // --- [Prisma Migration - Booking Creation Only] ---
 import { PrismaClient } from "@prisma/client";
@@ -752,25 +754,17 @@ async function startServer() {
       paymentStatus
     } = req.body;
 
-    if (!guestName || !guestEmail || !guestPhone || !roomTypeId || !checkInDate || !checkOutDate) {
+    const guestValidation = GuestService.validateGuestPayload({ guestName, guestEmail, guestPhone });
+    if (!guestValidation.valid) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     // 1. Find or create guest
-    let guest = guests.find(g => g.email.toLowerCase() === guestEmail.toLowerCase());
-    if (!guest) {
-      guest = {
-        id: `GUST-${Date.now().toString().slice(-4)}`,
-        name: guestName,
-        email: guestEmail,
-        phone: guestPhone,
-        createdAt: new Date().toISOString()
-      };
-      guests.push(guest);
-    } else {
-      // update phone if changed
-      guest.phone = guestPhone;
-    }
+    const guest = GuestService.findOrCreateGuest(guests, {
+      name: guestName,
+      email: guestEmail,
+      phone: guestPhone
+    });
 
     // ----------------------------------------------------
     // BUSINESS RULE: Validate Room Type availability
@@ -860,10 +854,7 @@ async function startServer() {
 
     // If room is assigned, update room status
     if (newBooking.roomId) {
-      const room = rooms.find(r => r.id === newBooking.roomId);
-      if (room) {
-        room.status = RoomStatus.RESERVED;
-      }
+      RoomService.assignRoom(rooms, newBooking.roomId, newBooking.status);
     }
 
     // 3. Create payment record if anypayment mode triggered
@@ -1258,34 +1249,10 @@ async function startServer() {
     // Handle room assignment change
     if (roomId !== undefined) {
       const nextRoomId = roomId;
-      // Only validate when assigning a physical room (not unassigning)
       if (nextRoomId) {
         const newCheckIn = new Date(booking.checkInDate);
         const newCheckOut = new Date(booking.checkOutDate);
-
-
-        // Treat overlapping ranges as: newIn < existingOut AND newOut > existingIn
-        // This permits checkout == next check-in on the same day.
-        const overlaps = (existingIn: string, existingOut: string) => {
-          const exIn = new Date(existingIn);
-          const exOut = new Date(existingOut);
-          return newCheckIn < exOut && newCheckOut > exIn;
-        };
-
-        const conflictingBooking = bookings.find(b => {
-          if (String(b.roomId) !== String(nextRoomId)) return false;
-          if (b.id === booking.id) return false;
-
-          const isCancelled = b.status === BookingStatus.CANCELLED;
-
-          // Ticket rule: NOT checked out. We treat BookingStatus.CHECKED_OUT as checked-out.
-          const isCheckedOut = b.status === BookingStatus.CHECKED_OUT;
-          if (isCancelled) return false;
-          if (isCheckedOut) return false;
-
-          return overlaps(b.checkInDate, b.checkOutDate);
-        });
-
+        const conflictingBooking = RoomService.detectRoomConflict(bookings, nextRoomId, newCheckIn, newCheckOut, booking.id);
         if (conflictingBooking) {
           return res.status(409).json({
             error: "This room is already assigned to another active booking for the selected dates."
@@ -1295,25 +1262,14 @@ async function startServer() {
 
       booking.roomId = roomId;
 
-
       // If prior room was allocated, revert it to Available if it was Reserved/Occupied
       if (previousRoomId && previousRoomId !== roomId) {
-        const prevRoom = rooms.find(r => r.id === previousRoomId);
-        if (prevRoom && (prevRoom.status === RoomStatus.RESERVED || prevRoom.status === RoomStatus.OCCUPIED)) {
-          prevRoom.status = RoomStatus.AVAILABLE;
-        }
+        RoomService.releaseRoom(rooms, previousRoomId);
       }
 
       // Sync new room's status to reflect assignment
       if (roomId) {
-        const targetRoom = rooms.find(r => r.id === roomId);
-        if (targetRoom) {
-          if (booking.status === BookingStatus.CHECKED_IN) {
-            targetRoom.status = RoomStatus.OCCUPIED;
-          } else {
-            targetRoom.status = RoomStatus.RESERVED;
-          }
-        }
+        RoomService.assignRoom(rooms, roomId, booking.status);
 
         // Notify room assignment
         notifications.unshift({
@@ -1334,10 +1290,7 @@ async function startServer() {
       if (status === BookingStatus.CHECKED_IN) {
         booking.checkedInAt = new Date().toISOString();
         if (activeRoomId) {
-          const room = rooms.find(r => r.id === activeRoomId);
-          if (room) {
-            room.status = RoomStatus.OCCUPIED;
-          }
+          RoomService.assignRoom(rooms, activeRoomId, BookingStatus.CHECKED_IN);
         }
         notifications.unshift({
           id: `NT-${Date.now()}-cin`,
@@ -1348,7 +1301,7 @@ async function startServer() {
           createdAt: new Date().toISOString()
         });
 
-        const targetGuest = guests.find(g => g.id === booking.guestId);
+        const targetGuest = GuestService.findGuestById(guests, booking.guestId);
         const roomType = INITIAL_ROOM_TYPES.find(rt => rt.id === booking.roomTypeId);
         const roomTypeName = roomType ? roomType.name : "Suite Luxury Stay";
         if (targetGuest) {
@@ -1364,11 +1317,7 @@ async function startServer() {
       if (status === BookingStatus.CHECKED_OUT || status === BookingStatus.MOVED_TO_BILLING) {
         booking.checkedOutAt = new Date().toISOString();
         if (activeRoomId) {
-          const room = rooms.find(r => r.id === activeRoomId);
-          if (room) {
-            // Room goes to cleaning automatically!
-            room.status = RoomStatus.CLEANING;
-          }
+          RoomService.updateRoomStatus(rooms, activeRoomId, RoomStatus.CLEANING);
         }
         notifications.unshift({
           id: `NT-${Date.now()}-cout`,
@@ -1379,7 +1328,7 @@ async function startServer() {
           createdAt: new Date().toISOString()
         });
 
-        const targetGuest = guests.find(g => g.id === booking.guestId);
+        const targetGuest = GuestService.findGuestById(guests, booking.guestId);
         const roomType = INITIAL_ROOM_TYPES.find(rt => rt.id === booking.roomTypeId);
         const roomTypeName = roomType ? roomType.name : "Suite Luxury Stay";
         if (targetGuest) {
@@ -1394,10 +1343,7 @@ async function startServer() {
 
       if (status === BookingStatus.CANCELLED) {
         if (activeRoomId) {
-          const room = rooms.find(r => r.id === activeRoomId);
-          if (room && (room.status === RoomStatus.RESERVED || room.status === RoomStatus.OCCUPIED)) {
-            room.status = RoomStatus.AVAILABLE;
-          }
+          RoomService.releaseRoom(rooms, activeRoomId);
         }
         booking.roomId = null;
       }
@@ -1412,13 +1358,9 @@ async function startServer() {
     const roomId = req.params.id;
     const { status } = req.body;
 
-    const room = rooms.find(r => r.id === roomId);
+    const room = RoomService.updateRoomStatus(rooms, roomId, status as RoomStatus);
     if (!room) {
       return res.status(404).json({ error: "Room not found" });
-    }
-
-    if (status !== undefined) {
-      room.status = status as RoomStatus;
     }
 
     saveState();
@@ -1446,20 +1388,20 @@ async function startServer() {
       return res.status(404).json({ error: "Booking booking ID not found" });
     }
 
-    const guest = guests.find(g => g.id === booking.guestId);
+    const guest = GuestService.findGuestById(guests, booking.guestId);
     if (!guest) {
       return res.status(440).json({ error: "Guest profile not found" });
     }
 
-    // Update guest profile
-    if (guestName) guest.name = guestName;
-    if (guestPhone) guest.phone = guestPhone;
-    if (idType) guest.idType = idType;
-    if (idNumber) guest.idNumber = idNumber;
-    
-    // Set simulated doc link
-    const simulatedDocUrl = idProofBase64 ? `/uploads/simulated_${Date.now()}_id.jpg` : "/uploads/placeholder_id.jpg";
-    guest.idProofUrl = simulatedDocUrl;
+    GuestService.updateGuest(guest, {
+      name: guestName,
+      phone: guestPhone,
+      idType,
+      idNumber,
+      idProofUrl: idProofBase64 ? `/uploads/simulated_${Date.now()}_id.jpg` : "/uploads/placeholder_id.jpg"
+    });
+
+    const simulatedDocUrl = guest.idProofUrl || "/uploads/placeholder_id.jpg";
 
     // Save arrival intelligence and checkin metadata
     if (arrivalMode) (booking as any).arrivalMode = arrivalMode;
@@ -1611,7 +1553,7 @@ async function startServer() {
     }
 
     // Auto-create a service request for room upgrade key delivery / room preparation
-    const targetGuest = guests.find(g => g.id === booking.guestId);
+    const targetGuest = GuestService.findGuestById(guests, booking.guestId);
     const upgradeRequest = {
       id: `REQ-${Date.now().toString().slice(-4)}`,
       bookingId: bookingId,
@@ -1655,7 +1597,7 @@ async function startServer() {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    const guest = guests.find(g => g.id === booking.guestId);
+    const guest = GuestService.findGuestById(guests, booking.guestId);
     if (!guest) {
       return res.status(404).json({ error: "Guest not found" });
     }
