@@ -1,0 +1,6 @@
+{
+    "github.copilot.chat.additionalReadAccessPaths": [
+        ""
+    ],
+    "github.copilot.chat.agent.autoFix": true
+}

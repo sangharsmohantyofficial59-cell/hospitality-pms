@@ -10,6 +10,7 @@ import { createServer as createViteServer } from "vite";
 import { RoomStatus, BookingStatus, PaymentStatus, BookingSource, Booking, Room, Guest, Payment, Notification, UploadedDocument } from "./src/types";
 import { INITIAL_ROOMS, INITIAL_ROOM_TYPES, INITIAL_GUESTS, INITIAL_BOOKINGS, INITIAL_PAYMENTS, INITIAL_NOTIFICATIONS } from "./src/data/initialData";
 import { messageLogs, setMessageLogs, sendNotificationEvents } from "./src/services/notificationService";
+import { ActivityLogService } from "./server/services/ActivityLogService";
 
 // --- [Prisma Migration - Booking Creation Only] ---
 import { PrismaClient } from "@prisma/client";
@@ -513,9 +514,7 @@ async function startServer() {
     serviceRequests.unshift(newRequest);
 
     // Auto create an activity log entry
-    activityLogs.unshift({
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    ActivityLogService.log(activityLogs, {
       action: "Service Request Created",
       user: guestName || "Guest Portal",
       details: `New request logged for Room ${roomId || "N/A"}: ${requestType}. Comments: ${comments || "None"}`,
@@ -548,9 +547,7 @@ async function startServer() {
     if (description !== undefined) request.description = description;
 
     // Log the update
-    activityLogs.unshift({
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    ActivityLogService.log(activityLogs, {
       action: "Service Request Updated",
       user: operatorName || "Front Desk",
       details: `Service request ${request.id} (${request.requestType}) status updated to ${request.status || "Updated"}. Assigned: ${request.assignedStaff || "N/A"}`,
@@ -583,9 +580,7 @@ async function startServer() {
     tourismInquiries.unshift(newInquiry);
 
     // Auto create an activity log entry
-    activityLogs.unshift({
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    ActivityLogService.log(activityLogs, {
       action: "Tourism Inquiry Logged",
       user: guestName || "Puri Explorer",
       details: `Puri Concierge inquiry received for ${tourType} on ${date}. Notes: ${notes || "None"}`,
@@ -608,9 +603,7 @@ async function startServer() {
     if (status) inquiry.status = status;
 
     // Log status update
-    activityLogs.unshift({
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    ActivityLogService.log(activityLogs, {
       action: "Tourism Inquiry Updated",
       user: operatorName || "Front Desk",
       details: `Tourism inquiry ${inquiry.id} (${inquiry.tourType}) status updated to ${status}.`,
@@ -647,9 +640,7 @@ async function startServer() {
     feedbacks.unshift(newFeedback);
 
     // Add activity log
-    activityLogs.unshift({
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    ActivityLogService.log(activityLogs, {
       action: isServiceRecovery ? "Service Recovery Ticket Created" : "Guest Feedback Received",
       user: guestName || "Checkout System",
       details: isServiceRecovery 
@@ -673,9 +664,7 @@ async function startServer() {
 
     if (serviceRecoveryStatus) feedback.serviceRecoveryStatus = serviceRecoveryStatus;
 
-    activityLogs.unshift({
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    ActivityLogService.log(activityLogs, {
       action: "Service Recovery Ticket Action",
       user: operatorName || "Owner Command Center",
       details: `Service recovery ticket for ${feedback.guestName} has been marked as ${serviceRecoveryStatus}.`,
@@ -731,7 +720,14 @@ async function startServer() {
       details,
       icon: icon || "info"
     };
-    activityLogs.unshift(newLog);
+    ActivityLogService.log(activityLogs, {
+      id: newLog.id,
+      timestamp: newLog.timestamp,
+      action: newLog.action,
+      user: newLog.user,
+      details: newLog.details,
+      icon: newLog.icon || "info"
+    });
     saveState();
     res.json({ success: true, log: newLog });
   });
@@ -855,9 +851,7 @@ async function startServer() {
     bookings.push(newBooking);
 
     // Append to system central Activity Log
-    activityLogs.unshift({
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    ActivityLogService.log(activityLogs, {
       action: "Reservation Creation",
       user: source === BookingSource.WEBSITE ? "Website Engine" : "Rajesh Kumar (Front Desk)",
       details: `New reservation ${bookingId} created for guest ${guest.name} (${newBooking.bookingType}). Total: ₹${newBooking.totalPrice.toLocaleString()}${newBooking.paymentOption === "Advance" ? ` [Advance Paid: ₹${newBooking.advancePaid?.toLocaleString()}, Balance: ₹${newBooking.pendingBalance?.toLocaleString()}]` : ""}`,
@@ -1004,9 +998,7 @@ async function startServer() {
 
     // Detect modifications for Activity Logging
     if (roomId !== undefined && roomId !== previousRoomId) {
-      activityLogs.unshift({
-        id: `ACT-${Date.now().toString().slice(-4)}`,
-        timestamp: new Date().toISOString(),
+      ActivityLogService.log(activityLogs, {
         action: "Room Assignment",
         user: req.body.operatorName || "Rajesh Kumar (Front Desk)",
         details: `Room ${roomId || "unassigned"} assigned to guest reservation ${bookingId}.`,
@@ -1026,9 +1018,7 @@ async function startServer() {
       const remarks = req.body.discountRemarks || "N/A";
       const approvedVia = req.body.discountApprovedVia || "Manager Approval";
 
-      activityLogs.unshift({
-        id: `ACT-${Date.now().toString().slice(-4)}`,
-        timestamp: new Date().toISOString(),
+      ActivityLogService.log(activityLogs, {
         action: "Discount Applied",
         user: appliedBy,
         details: `Discount Applied\n\nGuest: ${guestName}\nAmount: ₹${amtLog || (pctLog ? `${pctLog}%` : "0")}\nReason: ${reason}\nRemarks: ${remarks}\nApproved Via: ${approvedVia}\nApplied By: ${appliedBy}`,
@@ -1038,9 +1028,7 @@ async function startServer() {
 
     if (status !== undefined && status !== previousStatus) {
       if (status === "Invoice Generated") {
-        activityLogs.unshift({
-          id: `ACT-${Date.now().toString().slice(-4)}`,
-          timestamp: new Date().toISOString(),
+        ActivityLogService.log(activityLogs, {
           action: "Invoice Generation",
           user: "System Ledger",
           details: `Tax invoice generated successfully for Booking ${bookingId}. Total grand due: ₹${(booking.totalPrice - (booking.discountAmount || 0)).toLocaleString()}`,
@@ -1050,9 +1038,7 @@ async function startServer() {
       if ((status === "Paid" || status === "Closed") && (previousStatus !== "Paid" && previousStatus !== "Closed")) {
         const pm = req.body.closedBillDetails?.paymentMethod || req.body.paymentMethod || "UPI";
         const amt = req.body.closedBillDetails?.amountReceived || req.body.amount || booking.totalPrice;
-        activityLogs.unshift({
-          id: `ACT-${Date.now().toString().slice(-4)}`,
-          timestamp: new Date().toISOString(),
+        ActivityLogService.log(activityLogs, {
           action: "Payment Collection",
           user: req.body.operatorName || "Rajesh Kumar (Front Desk)",
           details: `Paid ledger collection of ₹${Number(amt).toLocaleString()} via ${pm} for folio ${bookingId}. Status: ${status}.`,
@@ -1060,9 +1046,7 @@ async function startServer() {
         });
       }
       if (status === BookingStatus.CHECKED_OUT) {
-        activityLogs.unshift({
-          id: `ACT-${Date.now().toString().slice(-4)}`,
-          timestamp: new Date().toISOString(),
+        ActivityLogService.log(activityLogs, {
           action: "Checkout Events",
           user: req.body.operatorName || "Rajesh Kumar (Front Desk)",
           details: `Checked out guest from Room ${booking.roomId || "N/A"} for Booking ${bookingId}.`,

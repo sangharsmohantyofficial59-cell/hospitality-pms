@@ -248,13 +248,33 @@
       "checkInDate": "2026-06-15",
       "checkOutDate": "2026-06-19",
       "numberOfGuests": 1,
-      "totalPrice": 6000,
+      "totalPrice": 0,
       "source": "Agoda",
       "status": "Checked Out",
       "paymentStatus": "Paid",
       "createdAt": "2026-06-05T09:15:00Z",
       "checkedInAt": "2026-06-15T11:20:00Z",
-      "checkedOutAt": "2026-06-19T10:00:00Z"
+      "checkedOutAt": "2026-06-19T10:00:00Z",
+      "discountAmount": 8800,
+      "discountPercent": 0,
+      "discountReason": "Billing Adjustment",
+      "discountRemarks": "guest",
+      "discountApprovedVia": "Manager Approval",
+      "discountAppliedBy": "Front Desk Cashier",
+      "auditLogs": [
+        {
+          "timestamp": "2026-06-30T06:47:10.273Z",
+          "action": "Discount Applied",
+          "user": "Front Desk Cashier",
+          "notes": "Discount of ₹9856 applied. Reason: Billing Adjustment. Approved via: Manager Approval. Remarks: guest"
+        },
+        {
+          "timestamp": "2026-06-30T06:47:36.114Z",
+          "action": "Discount Applied",
+          "user": "Front Desk Cashier",
+          "notes": "Discount of ₹8800 applied. Reason: Billing Adjustment. Approved via: Manager Approval. Remarks: guest"
+        }
+      ]
     },
     {
       "id": "BK-1004",
@@ -851,9 +871,27 @@
       "transactionId": "pay_settle_1782663300417",
       "createdAt": "2026-06-28T16:15:00.417Z",
       "notes": "Checkout Settlement Revenue: Settle and Close Folio BK-6652"
+    },
+    {
+      "id": "PAY-REF-0616-1003",
+      "bookingId": "BK-1003",
+      "amount": -6000,
+      "method": "Refund",
+      "status": "Paid",
+      "transactionId": "ref_1782802030616",
+      "createdAt": "2026-06-30T06:47:10.616Z",
+      "notes": "Credit Balance Refund for Folio BK-1003"
     }
   ],
   "notifications": [
+    {
+      "id": "NT-1782802030616-refund",
+      "type": "payment_confirmation",
+      "title": "Credit Balance Refund Recorded",
+      "message": "Credit refund of ₹6,000 applied to guest account for folio BK-1003.",
+      "isRead": false,
+      "createdAt": "2026-06-30T06:47:10.617Z"
+    },
     {
       "id": "NT-1782663331895-room",
       "type": "room_assignment",
@@ -1524,6 +1562,22 @@
     }
   ],
   "activityLogs": [
+    {
+      "id": "ACT-6101",
+      "timestamp": "2026-06-30T06:47:36.101Z",
+      "action": "Discount Applied",
+      "user": "Front Desk Cashier",
+      "details": "Discount Applied\n\nGuest: John Doe\nAmount: ₹8800\nReason: Billing Adjustment\nRemarks: guest\nApproved Via: Manager Approval\nApplied By: Front Desk Cashier",
+      "icon": "discount"
+    },
+    {
+      "id": "ACT-0615",
+      "timestamp": "2026-06-30T06:47:10.615Z",
+      "action": "Discount Applied",
+      "user": "Front Desk Cashier",
+      "details": "Discount Applied\n\nGuest: John Doe\nAmount: ₹9856\nReason: Billing Adjustment\nRemarks: guest\nApproved Via: Manager Approval\nApplied By: Front Desk Cashier",
+      "icon": "discount"
+    },
     {
       "id": "ACT-6782",
       "timestamp": "2026-06-28T16:15:46.782Z",
