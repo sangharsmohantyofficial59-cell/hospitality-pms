@@ -14,6 +14,7 @@ import { ActivityLogService } from "./server/services/ActivityLogService";
 import { GuestService } from "./server/services/GuestService";
 import { RoomService } from "./server/services/RoomService";
 import { BookingService } from "./server/services/BookingService";
+import { PaymentService } from "./server/services/PaymentService";
 
 // --- [Prisma Migration - Booking Creation Only] ---
 import { PrismaClient } from "@prisma/client";
@@ -274,7 +275,7 @@ function reconcileSettlementPayments() {
     }
 
     // 2. Reconcile Transport Service Payments
-    if (booking.transport && booking.transport.cost > 0 && booking.transport.vehicleType && booking.status !== "Cancelled") {
+    if (booking.transport?.cost !== undefined && booking.transport.cost > 0 && booking.transport.vehicleType && booking.status !== "Cancelled") {
       const amt = Number(booking.transport.cost);
       const vehicle = booking.transport.vehicleType;
       const tDate = booking.checkedInAt || booking.createdAt || new Date().toISOString();
@@ -773,10 +774,15 @@ async function startServer() {
     const guest = createResult.guest as any;
     const bookingId = newBooking.id;
 
-    // 3. Create payment record if anypayment mode triggered
+    // 3. Create payment record if any payment mode was triggered
     if (paymentMethod) {
+      const paymentValidation = PaymentService.validatePayment(paymentMethod, transactionId);
+      if (!paymentValidation.valid) {
+        return res.status(400).json({ error: paymentValidation.reason });
+      }
+
       const paymentId = `PAY-${Date.now().toString().slice(-4)}`;
-      const payAmount = newBooking.paymentOption === "Advance" ? Number(newBooking.advancePaid) : Number(totalPrice);
+      const payAmount = PaymentService.calculateAdvancePayment(Number(totalPrice), newBooking.paymentOption, newBooking.advancePaid);
       const newPayment: Payment = {
         id: paymentId,
         bookingId: bookingId,
@@ -1016,16 +1022,13 @@ async function startServer() {
       const otherChargesTotal = customLines.reduce((sum: number, line: any) => sum + Number(line.amount || 0), 0);
 
       const subtotalRaw = baseAccommodationTotal + transportTotal + otherChargesTotal;
-
-      let discountReductions = Number(booking.discountAmount || 0);
-      if (booking.discountPercent) {
-        discountReductions = Math.round(subtotalRaw * (Number(booking.discountPercent) / 100));
-      }
-
-      const netTaxableAmount = Math.max(0, subtotalRaw - discountReductions);
-      const gstValue = Math.round(netTaxableAmount * (Number(booking.gstRate || 12)) / 100);
-      
-      booking.totalPrice = netTaxableAmount + gstValue;
+      const finalAmounts = PaymentService.calculateFinalAmount({
+        subtotalRaw,
+        discountAmount: booking.discountAmount,
+        discountPercent: booking.discountPercent,
+        gstRate: booking.gstRate
+      });
+      booking.totalPrice = finalAmounts.totalPrice;
     } catch (err) {
       console.error("Error recalculating booking total price:", err);
     }
@@ -1454,16 +1457,13 @@ async function startServer() {
       const otherChargesTotal = customLines.reduce((sum: number, line: any) => sum + Number(line.amount || 0), 0);
 
       const subtotalRaw = baseAccommodationTotal + transportTotal + otherChargesTotal;
-
-      let discountReductions = Number(booking.discountAmount || 0);
-      if (booking.discountPercent) {
-        discountReductions = Math.round(subtotalRaw * (Number(booking.discountPercent) / 100));
-      }
-
-      const netTaxableAmount = Math.max(0, subtotalRaw - discountReductions);
-      const gstValue = Math.round(netTaxableAmount * (Number(booking.gstRate || 12)) / 100);
-      
-      booking.totalPrice = netTaxableAmount + gstValue;
+      const finalAmounts = PaymentService.calculateFinalAmount({
+        subtotalRaw,
+        discountAmount: booking.discountAmount,
+        discountPercent: booking.discountPercent,
+        gstRate: booking.gstRate
+      });
+      booking.totalPrice = finalAmounts.totalPrice;
     } catch (err) {
       console.error("Error recalculating booking total price on upgrade:", err);
     }
