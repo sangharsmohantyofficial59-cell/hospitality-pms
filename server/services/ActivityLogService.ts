@@ -23,7 +23,7 @@ export type ActivityLogParams = {
 export class ActivityLogService {
   static log(activityLogs: ActivityLogEntry[], params: ActivityLogParams) {
     const entry: ActivityLogEntry = {
-      id: params.id || `ACT-${Date.now().toString().slice(-4)}`,
+      id: params.id || `ACT-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       timestamp: params.timestamp || new Date().toISOString(),
       action: params.action,
       user: params.user,

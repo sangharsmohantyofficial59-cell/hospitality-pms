@@ -48,19 +48,19 @@ export class GuestService {
   }
 
   static updateGuest(guest: Guest, params: GuestUpdateParams) {
-    if (params.name) guest.name = params.name;
-    if (params.phone) guest.phone = params.phone;
-    if (params.idType) guest.idType = params.idType;
-    if (params.idNumber) guest.idNumber = params.idNumber;
-    if (params.idProofUrl) guest.idProofUrl = params.idProofUrl;
+    if (params.name !== undefined) guest.name = params.name;
+    if (params.phone !== undefined) guest.phone = params.phone;
+    if (params.idType !== undefined) guest.idType = params.idType;
+    if (params.idNumber !== undefined) guest.idNumber = params.idNumber;
+    if (params.idProofUrl !== undefined) guest.idProofUrl = params.idProofUrl;
     return guest;
   }
 
   static findOrCreateGuest(guests: Guest[], params: GuestCreateParams) {
     const existing = this.findGuestByEmail(guests, params.email);
     if (existing) {
-      existing.phone = params.phone;
-      existing.name = params.name;
+      // Do not silently overwrite stored guest profile fields.
+      // Existing guests are matched by email and returned unchanged.
       return existing;
     }
     return this.createGuest(guests, params);

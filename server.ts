@@ -716,24 +716,14 @@ async function startServer() {
     if (!action || !user || !details) {
       return res.status(400).json({ error: "Missing required properties" });
     }
-    const newLog = {
-      id: `ACT-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString(),
+    const logEntry = ActivityLogService.log(activityLogs, {
       action,
       user,
       details,
       icon: icon || "info"
-    };
-    ActivityLogService.log(activityLogs, {
-      id: newLog.id,
-      timestamp: newLog.timestamp,
-      action: newLog.action,
-      user: newLog.user,
-      details: newLog.details,
-      icon: newLog.icon || "info"
     });
     saveState();
-    res.json({ success: true, log: newLog });
+    res.json({ success: true, log: logEntry });
   });
 
   // Create booking (Customer booking or Admin manual)

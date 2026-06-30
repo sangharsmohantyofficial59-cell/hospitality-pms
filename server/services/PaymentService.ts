@@ -21,11 +21,13 @@ export class PaymentService {
   }
 
   static applyDiscount(subtotalRaw: number, discountAmount?: number, discountPercent?: number) {
-    let discountReductions = Number(discountAmount || 0);
-    if (discountPercent) {
-      discountReductions = Math.round(subtotalRaw * (Number(discountPercent) / 100));
-    }
-    return discountReductions;
+    const amountDiscount = Number(discountAmount ?? 0);
+    const percentDiscount = discountPercent !== undefined
+      ? Math.round(subtotalRaw * (Number(discountPercent) / 100))
+      : 0;
+
+    // If both discount amount and discount percent are provided, apply the larger reduction.
+    return Math.max(0, Math.max(amountDiscount, percentDiscount));
   }
 
   static calculatePendingBalance(totalPrice: number, paymentOption?: string, advancePaid?: number, pendingBalance?: number) {
@@ -61,8 +63,8 @@ export class PaymentService {
 
   static calculatePaymentSummary(booking: Booking, requestedTotalPrice: number) {
     const payAmount = booking.paymentOption === "Advance"
-      ? Number(booking.advancePaid)
-      : Number(requestedTotalPrice);
+      ? Number(booking.advancePaid ?? 0)
+      : Number(requestedTotalPrice ?? 0);
 
     const status = booking.paymentOption === "Advance" ? PaymentStatus.PENDING : PaymentStatus.PAID;
     return { payAmount, status };

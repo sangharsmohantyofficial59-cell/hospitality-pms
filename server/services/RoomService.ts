@@ -8,7 +8,7 @@ export class RoomService {
   }
 
   static findRoomByNumber(rooms: Room[], number: string) {
-    return rooms.find(r => r.id === number || String(r.id) === String(number));
+    return this.findRoomById(rooms, number);
   }
 
   static updateRoomStatus(rooms: Room[], roomId: string | null | undefined, status: RoomStatus) {
@@ -87,7 +87,7 @@ export class RoomService {
     return !conflict;
   }
 
-  static calculateRoomOccupancy(rooms: Room[], bookings: Booking[]) {
+  static calculateRoomOccupancy(rooms: Room[]) {
     const occupied = rooms.filter(r => r.status === RoomStatus.OCCUPIED).length;
     const total = rooms.length || 1;
     return (occupied / total) * 100;

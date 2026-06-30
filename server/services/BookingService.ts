@@ -120,6 +120,13 @@ export class BookingService {
       ]
     } as Booking;
 
+    if (roomId) {
+      const roomConflict = RoomService.detectRoomConflict(bookings, String(roomId), requestedCheckIn, requestedCheckOut);
+      if (roomConflict) {
+        return { error: "Selected room is already booked for the chosen dates.", statusCode: 409 };
+      }
+    }
+
     bookings.push(newBooking);
 
     // Activity log
@@ -136,16 +143,5 @@ export class BookingService {
     }
 
     return { booking: newBooking, guest };
-  }
-
-  static updateBooking(bookings: Booking[], bookingId: string, updates: any) {
-    const booking = this.findBookingById(bookings, bookingId);
-    if (!booking) return { error: "Booking not found", statusCode: 404 };
-    Object.keys(updates).forEach(key => {
-      if (key !== "id" && key !== "guestId" && key !== "createdAt") {
-        (booking as any)[key] = updates[key];
-      }
-    });
-    return { booking };
   }
 }
