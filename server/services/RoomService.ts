@@ -49,7 +49,10 @@ export class RoomService {
     };
 
     const conflictingBooking = bookings.find(b => {
-      if (String(b.roomId) !== String(roomId)) return false;
+      const matchesRoomId = String(b.roomId) === String(roomId) ||
+        (b.bookingRooms && b.bookingRooms.some(r => r.roomId && String(r.roomId) === String(roomId)));
+
+      if (!matchesRoomId) return false;
       if (excludeBookingId && b.id === excludeBookingId) return false;
 
       const isCancelled = b.status === BookingStatus.CANCELLED;
@@ -72,12 +75,21 @@ export class RoomService {
       return requestedCheckIn < exOut && requestedCheckOut > exIn;
     };
 
-    const activeOverlappingBookingsCount = bookings.filter(b => {
-      if (String(b.roomTypeId) !== String(roomTypeId)) return false;
-      if (b.status === BookingStatus.CANCELLED) return false;
-      if (b.status === BookingStatus.CHECKED_OUT) return false;
-      return overlaps(b.checkInDate, b.checkOutDate);
-    }).length;
+    const activeOverlappingBookingsCount = bookings.reduce((sum, b) => {
+      if (b.status === BookingStatus.CANCELLED) return sum;
+      if (b.status === BookingStatus.CHECKED_OUT) return sum;
+      if (!overlaps(b.checkInDate, b.checkOutDate)) return sum;
+
+      if (b.bookingRooms && b.bookingRooms.length > 0) {
+        const matchingCount = b.bookingRooms.filter(r => String(r.roomTypeId) === String(roomTypeId)).length;
+        return sum + matchingCount;
+      }
+
+      if (String(b.roomTypeId) === String(roomTypeId)) {
+        return sum + 1;
+      }
+      return sum;
+    }, 0);
 
     return Math.max(0, totalPhysicalRoomsForType - activeOverlappingBookingsCount);
   }

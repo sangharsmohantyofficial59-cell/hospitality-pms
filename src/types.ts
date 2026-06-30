@@ -121,6 +121,13 @@ export interface Booking {
     notes?: string;
     closedAt: string;
   };
+  bookingRooms?: {
+    roomTypeId: string;
+    roomId: string | null;
+    adults: number;
+    children: number;
+    rate: number;
+  }[];
 }
 
 export interface Payment {

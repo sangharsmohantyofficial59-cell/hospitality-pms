@@ -1171,6 +1171,27 @@ async function startServer() {
 
       booking.roomId = roomId;
 
+      // Sync bookingRooms entries if multi-room booking
+      if (booking.bookingRooms && booking.bookingRooms.length > 0) {
+        if (roomId) {
+          const assignedRoomObj = rooms.find(r => String(r.id) === String(roomId));
+          if (assignedRoomObj) {
+            let slot = booking.bookingRooms.find(r => String(r.roomTypeId) === String(assignedRoomObj.roomTypeId) && (!r.roomId || String(r.roomId) === String(previousRoomId)));
+            if (!slot) {
+              slot = booking.bookingRooms.find(r => String(r.roomTypeId) === String(assignedRoomObj.roomTypeId));
+            }
+            if (slot) {
+              slot.roomId = roomId;
+            }
+          }
+        } else {
+          const slot = booking.bookingRooms.find(r => String(r.roomId) === String(previousRoomId));
+          if (slot) {
+            slot.roomId = null;
+          }
+        }
+      }
+
       // If prior room was allocated, revert it to Available if it was Reserved/Occupied
       if (previousRoomId && previousRoomId !== roomId) {
         RoomService.releaseRoom(rooms, previousRoomId);
@@ -1201,6 +1222,13 @@ async function startServer() {
         if (activeRoomId) {
           RoomService.assignRoom(rooms, activeRoomId, BookingStatus.CHECKED_IN);
         }
+        if (booking.bookingRooms) {
+          booking.bookingRooms.forEach((r: any) => {
+            if (r.roomId) {
+              RoomService.assignRoom(rooms, r.roomId, BookingStatus.CHECKED_IN);
+            }
+          });
+        }
         notifications.unshift({
           id: `NT-${Date.now()}-cin`,
           type: "check_in",
@@ -1228,6 +1256,13 @@ async function startServer() {
         if (activeRoomId) {
           RoomService.updateRoomStatus(rooms, activeRoomId, RoomStatus.CLEANING);
         }
+        if (booking.bookingRooms) {
+          booking.bookingRooms.forEach((r: any) => {
+            if (r.roomId) {
+              RoomService.updateRoomStatus(rooms, r.roomId, RoomStatus.CLEANING);
+            }
+          });
+        }
         notifications.unshift({
           id: `NT-${Date.now()}-cout`,
           type: "check_in",
@@ -1253,6 +1288,14 @@ async function startServer() {
       if (status === BookingStatus.CANCELLED) {
         if (activeRoomId) {
           RoomService.releaseRoom(rooms, activeRoomId);
+        }
+        if (booking.bookingRooms) {
+          booking.bookingRooms.forEach((r: any) => {
+            if (r.roomId) {
+              RoomService.releaseRoom(rooms, r.roomId);
+            }
+            r.roomId = null;
+          });
         }
         booking.roomId = null;
       }

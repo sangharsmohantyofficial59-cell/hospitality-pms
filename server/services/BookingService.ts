@@ -79,9 +79,28 @@ export class BookingService {
     // Check availability using RoomService helper
     const requestedCheckIn = new Date(checkInDate);
     const requestedCheckOut = new Date(checkOutDate);
-    const availableRooms = RoomService.getAvailableRooms(rooms, bookings, roomTypeId, requestedCheckIn, requestedCheckOut);
-    if (availableRooms <= 0) {
-      return { error: "No rooms of this type are available for the selected dates.", statusCode: 409 };
+
+    if (body.bookingRooms && Array.isArray(body.bookingRooms)) {
+      // Group by roomTypeId and count needed rooms
+      const counts: { [key: string]: number } = {};
+      body.bookingRooms.forEach((r: any) => {
+        counts[r.roomTypeId] = (counts[r.roomTypeId] || 0) + 1;
+      });
+
+      for (const rtId of Object.keys(counts)) {
+        const needed = counts[rtId];
+        const avail = RoomService.getAvailableRooms(rooms, bookings, rtId, requestedCheckIn, requestedCheckOut);
+        if (avail < needed) {
+          const rTypeName = initialRoomTypes.find(rt => rt.id === rtId)?.name || rtId;
+          return { error: `No rooms of type "${rTypeName}" are available for the selected dates.`, statusCode: 409 };
+        }
+      }
+    } else {
+      // Legacy single-room check
+      const availableRooms = RoomService.getAvailableRooms(rooms, bookings, roomTypeId, requestedCheckIn, requestedCheckOut);
+      if (availableRooms <= 0) {
+        return { error: "No rooms of this type are available for the selected dates.", statusCode: 409 };
+      }
     }
 
     // Create booking object (preserve ID format)
@@ -120,7 +139,28 @@ export class BookingService {
       ]
     } as Booking;
 
-    if (roomId) {
+    // Attach bookingRooms array if present in payload
+    if (body.bookingRooms && Array.isArray(body.bookingRooms)) {
+      newBooking.bookingRooms = body.bookingRooms.map((r: any) => ({
+        roomTypeId: r.roomTypeId,
+        roomId: r.roomId || null,
+        adults: Number(r.adults || 2),
+        children: Number(r.children || 0),
+        rate: Number(r.rate || 0)
+      }));
+    }
+
+    // Specific room conflict checks
+    if (newBooking.bookingRooms && newBooking.bookingRooms.length > 0) {
+      for (const r of newBooking.bookingRooms) {
+        if (r.roomId) {
+          const roomConflict = RoomService.detectRoomConflict(bookings, String(r.roomId), requestedCheckIn, requestedCheckOut);
+          if (roomConflict) {
+            return { error: `Selected room ${r.roomId} is already booked for the chosen dates.`, statusCode: 409 };
+          }
+        }
+      }
+    } else if (roomId) {
       const roomConflict = RoomService.detectRoomConflict(bookings, String(roomId), requestedCheckIn, requestedCheckOut);
       if (roomConflict) {
         return { error: "Selected room is already booked for the chosen dates.", statusCode: 409 };
@@ -137,10 +177,18 @@ export class BookingService {
       icon: "create"
     });
 
-    // If room assigned, update room status
-    if (newBooking.roomId) {
+    // If rooms assigned, update room status
+    if (newBooking.bookingRooms && newBooking.bookingRooms.length > 0) {
+      newBooking.bookingRooms.forEach((r: any) => {
+        if (r.roomId) {
+          RoomService.assignRoom(rooms, r.roomId, newBooking.status);
+        }
+      });
+    } else if (newBooking.roomId) {
       RoomService.assignRoom(rooms, newBooking.roomId, newBooking.status);
     }
+
+    return { booking: newBooking, guest };
 
     return { booking: newBooking, guest };
   }

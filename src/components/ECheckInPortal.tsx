@@ -134,10 +134,6 @@ export default function ECheckInPortal({
   // Submit check-in details
   const handleCheckinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeBooking?.roomId) {
-      setErrorText("Please assign a room before checking in this guest.");
-      return;
-    }
     if (!idNumber) {
       setErrorText("Please state your ID card identification serial number.");
       return;
@@ -324,7 +320,7 @@ export default function ECheckInPortal({
               )}
 
               {activeBooking.webCheckInStatus === "Re-upload Required" && (
-                <div className="bg-amber-50 dark:bg-amber-950/20 border-b border-amber-200 dark:border-amber-900 p-4 text-amber-800 dark:text-amber-455 flex items-start gap-2.5 font-sans">
+                <div className="bg-amber-50 dark:bg-amber-950/20 border-b border-amber-200 dark:border-amber-900 p-4 text-amber-800 dark:text-amber-400 flex items-start gap-2.5 font-sans">
                   <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600 animate-bounce" />
                   <div>
                     <strong className="font-bold">Document Re-upload Requested!</strong>
