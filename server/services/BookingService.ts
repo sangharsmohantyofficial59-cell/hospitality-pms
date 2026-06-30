@@ -38,30 +38,6 @@ export class BookingService {
     }
   }
 
-  static calculateBookingTotals(booking: Booking, initialRoomTypes: any[]) {
-    try {
-      const rt = initialRoomTypes.find((t: any) => t.id === booking.roomTypeId);
-      const diffTime = Math.abs(new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime());
-      const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-      const baseTariff = rt?.basePrice || 2500;
-      const baseAccommodationTotal = baseTariff * diffDays;
-      const transportTotal = booking.transport && booking.transport.vehicleType ? (booking.transport.cost || 0) : 0;
-      const customLines = booking.customServiceLines || [];
-      const otherChargesTotal = customLines.reduce((sum: number, line: any) => sum + Number(line.amount || 0), 0);
-      const subtotalRaw = baseAccommodationTotal + transportTotal + otherChargesTotal;
-      let discountReductions = Number(booking.discountAmount || 0);
-      if (booking.discountPercent) {
-        discountReductions = Math.round(subtotalRaw * (Number(booking.discountPercent || 0) / 100));
-      }
-      const netTaxableAmount = Math.max(0, subtotalRaw - discountReductions);
-      const gstValue = Math.round(netTaxableAmount * (Number(booking.gstRate || 12)) / 100);
-      booking.totalPrice = netTaxableAmount + gstValue;
-      return booking.totalPrice;
-    } catch (e) {
-      return booking.totalPrice;
-    }
-  }
-
   static createBooking(params: CreateBookingParams) {
     const { body, guests, bookings, rooms, activityLogs, initialRoomTypes } = params;
     const {
