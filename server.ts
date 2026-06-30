@@ -13,6 +13,7 @@ import { messageLogs, setMessageLogs, sendNotificationEvents } from "./src/servi
 import { ActivityLogService } from "./server/services/ActivityLogService";
 import { GuestService } from "./server/services/GuestService";
 import { RoomService } from "./server/services/RoomService";
+import { BookingService } from "./server/services/BookingService";
 
 // --- [Prisma Migration - Booking Creation Only] ---
 import { PrismaClient } from "@prisma/client";
@@ -754,108 +755,23 @@ async function startServer() {
       paymentStatus
     } = req.body;
 
-    const guestValidation = GuestService.validateGuestPayload({ guestName, guestEmail, guestPhone });
-    if (!guestValidation.valid) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    // 1. Find or create guest
-    const guest = GuestService.findOrCreateGuest(guests, {
-      name: guestName,
-      email: guestEmail,
-      phone: guestPhone
+    // Delegate booking creation to BookingService
+    const createResult = BookingService.createBooking({
+      body: req.body,
+      guests,
+      bookings,
+      rooms,
+      activityLogs,
+      initialRoomTypes: INITIAL_ROOM_TYPES
     });
 
-    // ----------------------------------------------------
-    // BUSINESS RULE: Validate Room Type availability
-    // (backend is source of truth; must run immediately before booking creation)
-    // ----------------------------------------------------
-    const requestedRoomTypeId = roomTypeId;
-  const requestedCheckIn = new Date(checkInDate);
-    const requestedCheckOut = new Date(checkOutDate);
-
-
-
-    const overlaps = (existingIn: string, existingOut: string) => {
-      const exIn = new Date(existingIn);
-      const exOut = new Date(existingOut);
-      // overlap iff: newIn < existingOut AND newOut > existingIn
-      return requestedCheckIn < exOut && requestedCheckOut > exIn;
-    };
-
-    const totalPhysicalRoomsForType = rooms.filter(r => String(r.roomTypeId) === String(requestedRoomTypeId)).length;
-
-    const activeOverlappingBookingsCount = bookings.filter(b => {
-      if (String(b.roomTypeId) !== String(requestedRoomTypeId)) return false;
-
-      // Ignore CANCELLED and CHECKED_OUT bookings
-      if (b.status === BookingStatus.CANCELLED) return false;
-      if (b.status === BookingStatus.CHECKED_OUT) return false;
-
-      return overlaps(b.checkInDate, b.checkOutDate);
-    }).length;
-
-    const availableRooms = totalPhysicalRoomsForType - activeOverlappingBookingsCount;
-
-    if (availableRooms <= 0) {
-      return res.status(409).json({
-        error: "No rooms of this type are available for the selected dates."
-      });
+    if (createResult.error) {
+      return res.status(createResult.statusCode || 400).json({ error: createResult.error });
     }
 
-    // 2. Create the booking object
-    const bookingId = `BK-${Date.now().toString().slice(-4)}`;
-
-
-    const newBooking: Booking = {
-      id: bookingId,
-      guestId: guest.id,
-      roomId: roomId || null,
-      roomTypeId,
-      checkInDate,
-      checkOutDate,
-      numberOfGuests: Number(numberOfGuests),
-      totalPrice: Number(totalPrice),
-      source: source || BookingSource.WEBSITE,
-      status: BookingStatus.CONFIRMED,
-      paymentStatus: paymentStatus || PaymentStatus.PENDING,
-      notes,
-      createdAt: new Date().toISOString(),
-      // Custom Demo Properties
-      bookingType: req.body.bookingType || "Room Booking",
-      discountAmount: Number(req.body.discountAmount || 0),
-      discountPercent: Number(req.body.discountPercent || 0),
-      gstRate: Number(req.body.gstRate || 12),
-      customServiceLines: req.body.customServiceLines || [],
-      transport: req.body.transport || { vehicleType: "", pickupAddress: "", dropAddress: "", scheduleTime: "", status: "Pending", cost: undefined },
-      cancellationReason: "",
-      paymentOption: req.body.paymentOption || "Full",
-      advancePaid: req.body.paymentOption === "Advance" ? Number(req.body.advancePaid || (Number(totalPrice) / 2)) : Number(req.body.advancePaid || totalPrice),
-      pendingBalance: req.body.paymentOption === "Advance" ? Number(req.body.pendingBalance || (Number(totalPrice) - Number(req.body.advancePaid || (Number(totalPrice) / 2)))) : Number(req.body.pendingBalance || 0),
-      auditLogs: req.body.auditLogs || [
-        {
-          timestamp: new Date().toISOString(),
-          action: "Booking Created",
-          user: guestName,
-          notes: `Created via channel: ${source || "Walk-In"} - Category: ${roomTypeId} (${req.body.paymentOption === "Advance" ? "Pay Advance Selected" : "Pay Full Selected"})`
-        }
-      ]
-    };
-
-    bookings.push(newBooking);
-
-    // Append to system central Activity Log
-    ActivityLogService.log(activityLogs, {
-      action: "Reservation Creation",
-      user: source === BookingSource.WEBSITE ? "Website Engine" : "Rajesh Kumar (Front Desk)",
-      details: `New reservation ${bookingId} created for guest ${guest.name} (${newBooking.bookingType}). Total: ₹${newBooking.totalPrice.toLocaleString()}${newBooking.paymentOption === "Advance" ? ` [Advance Paid: ₹${newBooking.advancePaid?.toLocaleString()}, Balance: ₹${newBooking.pendingBalance?.toLocaleString()}]` : ""}`,
-      icon: "create"
-    });
-
-    // If room is assigned, update room status
-    if (newBooking.roomId) {
-      RoomService.assignRoom(rooms, newBooking.roomId, newBooking.status);
-    }
+    const newBooking: Booking = createResult.booking as Booking;
+    const guest = createResult.guest as any;
+    const bookingId = newBooking.id;
 
     // 3. Create payment record if anypayment mode triggered
     if (paymentMethod) {
