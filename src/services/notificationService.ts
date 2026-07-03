@@ -250,7 +250,9 @@ export function generateTemplates(
   guest: any,
   roomTypeName: string
 ) {
-  const rootUrl = process.env.APP_URL || "https://ais-dev-pz53nhau76qrsxicbwhilx-1046839605750.asia-southeast1.run.app";
+  const rootUrl =
+  process.env.APP_URL ||
+  "https://hospitality-pms-production.up.railway.app";
   
   if (event === "booking_confirmation") {
     const subject = `Reservation Confirmed: Your Stay at Grand Crest (${booking.id})`;

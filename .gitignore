@@ -7,4 +7,5 @@ coverage/
 .env*
 !.env.example
 
+hospitality_pms.sql 
 /src/generated/prisma
