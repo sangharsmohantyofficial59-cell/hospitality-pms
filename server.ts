@@ -9,6 +9,7 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { RoomStatus, BookingStatus, PaymentStatus, BookingSource, Booking, Room, Guest, Payment, Notification, UploadedDocument } from "./src/types";
 import { INITIAL_ROOMS, INITIAL_ROOM_TYPES, INITIAL_GUESTS, INITIAL_BOOKINGS, INITIAL_PAYMENTS, INITIAL_NOTIFICATIONS } from "./src/data/initialData";
+import { ROOM_TYPES as HOTEL_ROOM_TYPES } from "./src/config/hotel";
 import { messageLogs, setMessageLogs, sendNotificationEvents } from "./src/services/notificationService";
 import { ActivityLogService } from "./server/services/ActivityLogService";
 import { GuestService } from "./server/services/GuestService";
@@ -480,7 +481,15 @@ async function startServer() {
     res.json({
       success: true,
       rooms: rooms ?? [],
-      roomTypes: INITIAL_ROOM_TYPES ?? [],
+roomTypes: (HOTEL_ROOM_TYPES ?? []).map((rt) => ({
+        id: rt.id,
+        name: rt.name,
+        description: rt.description,
+        basePrice: rt.baseRateINR,
+        maxGuests: rt.occupancy.max,
+        amenities: [] as string[],
+        imageUrl: "",
+      })),
       guests: guests ?? [],
       bookings: bookings ?? [],
       payments: payments ?? [],
@@ -826,7 +835,7 @@ async function startServer() {
       bookings,
       rooms,
       activityLogs,
-      initialRoomTypes: INITIAL_ROOM_TYPES
+initialRoomTypes: [...HOTEL_ROOM_TYPES] as any[]
     });
 
     if (createResult.error) {

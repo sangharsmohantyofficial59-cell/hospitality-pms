@@ -146,6 +146,7 @@ export default function App() {
       const data = await api.system.getState();
       setRooms(data.rooms || []);
       setRoomTypes(data.roomTypes || []);
+      console.log("App roomTypes", data.roomTypes);
       setGuests(data.guests || []);
       setBookings(data.bookings || []);
       setPayments(data.payments || []);

@@ -67,6 +67,7 @@ export default function CustomerWebsite({
   setTab,
   onNewBooking
 }: CustomerWebsiteProps) {
+  console.log("CustomerWebsite roomTypes", roomTypes);
   
   // Search parameters for Booking Engine
   const [checkIn, setCheckIn] = useState<string>("2026-06-21");
@@ -78,13 +79,14 @@ export default function CustomerWebsite({
   const [multiRoomSelections, setMultiRoomSelections] = useState<MultiRoomSelection[]>([
     {
       id: `rm_${Date.now()}`,
-      roomTypeId: roomTypes[0]?.id || "",
+      roomTypeId: "",
       roomId: undefined,
       adults: 2,
       children: 0,
-      rate: roomTypes[0]?.basePrice || 2200,
+      rate: 0,
     },
   ]);
+
 
   // Ensure room type/rate is in sync when roomTypes update (front-end only)
   useEffect(() => {
@@ -1436,8 +1438,8 @@ export default function CustomerWebsite({
                         const rt = roomTypes.find(r => r.id === selection.roomTypeId);
                         return (
                           <RoomCard
-                            key={selection.id}
                             selection={selection}
+
                             roomType={rt}
                             roomTypes={roomTypes}
                             cardIndex={idx}

@@ -5,85 +5,39 @@
 
 import { RoomType, Room, Guest, Booking, RoomStatus, BookingSource, BookingStatus, PaymentStatus, Payment, Notification } from "../types";
 
-export const INITIAL_ROOM_TYPES: RoomType[] = [
-  {
-    id: "std",
-    name: "Niladri Cozy Sanctuary",
-    description: "Centrally air-conditioned cozy sanctuary perfect for solo pilgrims, spiritual seekers, or solo travelers. Offers elegant local handloom drapery, a dynamic work desk, and side views of Puri town.",
-    basePrice: 2200,
-    maxGuests: 1,
-    amenities: ["Breezy Sit-out Balcony", "High-speed Wi-Fi", "LED Smart TV", "Temple Puja Guidebook", "Custom Sandalwood Toiletries", "Organic Tea Station"],
-    imageUrl: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "deluxe",
-    name: "Chakra Golden Sands Deluxe",
-    description: "Spacious air-conditioned deluxe chambers featuring majestic ocean breezes, customized golden-sand decor, premium ivory cotton bedding, and private step-out balconies overlooking the beach.",
-    basePrice: 3800,
-    maxGuests: 2,
-    amenities: ["Golden Beach Side View", "High-speed Wi-Fi", "43\" UHD TV with Spiritual Channels", "Premium Mini Bar", "Marble Bath with Rain Shower", "Daily Puri Mahaprasad Platter Offerings"],
-    imageUrl: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "exec",
-    name: "Jagannath Temple Heritage Family",
-    description: "Designed for families on a spiritual vacation, incorporating traditional Odia handloom decor, majestic double workspaces, twin supreme beds, and dedicated private temple service assistance.",
-    basePrice: 5500,
-    maxGuests: 3,
-    amenities: ["Direct Temple Towers View", "Express Vip Jagannath Darshan Assistance", "Complimentary Coastal Seafood Breakfast", "Premium Cotton Bathrobes & Slippers", "Large Living Sofa Lounge", "Odia Heritage Art Frame Decor"],
-    imageUrl: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "suite",
-    name: "Mahodadhi Sea-Facing Royal Suite",
-    description: "The crown jewel of Puri luxury. Features boundless private panoramic balconies, high-contrast gold fixtures, a hand-crafted chariot wheel wheel mockup, an infinity jacuzzi, and private chef dining.",
-    basePrice: 12500,
-    maxGuests: 4,
-    amenities: ["Panoramic Ocean-View Sun Decks", "Chariot Gold Private Jacuzzi", "Dedicated 24/7 Royal Butler Support", "Odisha Handloomed Silk Linens", "Separate Spiritual Puja Altar & Lounge", "Traditional Seafood Dinner Tour Included"],
-    imageUrl: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80"
+import { ROOM_TYPES } from "../config/hotel/roomTypes";
+import { ROOMS } from "../config/hotel/rooms";
+
+export const INITIAL_ROOM_TYPES: RoomType[] = ROOM_TYPES.map((rt) => ({
+  id: rt.id,
+  name: rt.name,
+  description: rt.description,
+  basePrice: rt.baseRateINR,
+  maxGuests: rt.occupancy.max,
+  amenities: [] as string[],
+  imageUrl: "",
+}));
+
+// Map Rooms config status to RoomStatus enum
+function mapStatus(status: string): RoomStatus {
+  switch (status) {
+    case "Occupied":
+      return RoomStatus.OCCUPIED;
+    case "Dirty":
+      return RoomStatus.CLEANING;
+    case "Blocked":
+    case "Under Repair":
+      return RoomStatus.MAINTENANCE;
+    default:
+      return RoomStatus.AVAILABLE;
   }
-];
+}
 
-// Floor 1: Standard Single (101 - 110)
-// Floor 2: Deluxe Double (201 - 210)
-// Floor 3: Executive Twin (301 - 306), Suites (307 - 310)
-export const INITIAL_ROOMS: Room[] = [
-  // 1st Floor
-  { id: "101", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-  { id: "102", roomTypeId: "std", status: RoomStatus.CLEANING },
-  { id: "103", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-  { id: "104", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-  { id: "105", roomTypeId: "std", status: RoomStatus.MAINTENANCE },
-  { id: "106", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-  { id: "107", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-  { id: "108", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-  { id: "109", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-  { id: "110", roomTypeId: "std", status: RoomStatus.AVAILABLE },
-
-  // 2nd Floor
-  { id: "201", roomTypeId: "deluxe", status: RoomStatus.OCCUPIED },
-  { id: "202", roomTypeId: "deluxe", status: RoomStatus.AVAILABLE },
-  { id: "203", roomTypeId: "deluxe", status: RoomStatus.AVAILABLE },
-  { id: "204", roomTypeId: "deluxe", status: RoomStatus.CLEANING },
-  { id: "205", roomTypeId: "deluxe", status: RoomStatus.AVAILABLE },
-  { id: "206", roomTypeId: "deluxe", status: RoomStatus.RESERVED },
-  { id: "207", roomTypeId: "deluxe", status: RoomStatus.AVAILABLE },
-  { id: "208", roomTypeId: "deluxe", status: RoomStatus.AVAILABLE },
-  { id: "209", roomTypeId: "deluxe", status: RoomStatus.AVAILABLE },
-  { id: "210", roomTypeId: "deluxe", status: RoomStatus.AVAILABLE },
-
-  // 3rd Floor
-  { id: "301", roomTypeId: "exec", status: RoomStatus.RESERVED },
-  { id: "302", roomTypeId: "exec", status: RoomStatus.OCCUPIED },
-  { id: "303", roomTypeId: "exec", status: RoomStatus.AVAILABLE },
-  { id: "304", roomTypeId: "exec", status: RoomStatus.AVAILABLE },
-  { id: "305", roomTypeId: "exec", status: RoomStatus.AVAILABLE },
-  { id: "306", roomTypeId: "exec", status: RoomStatus.MAINTENANCE },
-  { id: "307", roomTypeId: "suite", status: RoomStatus.OCCUPIED },
-  { id: "308", roomTypeId: "suite", status: RoomStatus.AVAILABLE },
-  { id: "309", roomTypeId: "suite", status: RoomStatus.AVAILABLE },
-  { id: "310", roomTypeId: "suite", status: RoomStatus.AVAILABLE }
-];
+export const INITIAL_ROOMS: Room[] = ROOMS.map((r) => ({
+  id: String(r.roomNo),
+  roomTypeId: r.roomTypeId,
+  status: mapStatus(r.status),
+}));
 
 export const INITIAL_GUESTS: Guest[] = [
   {
@@ -136,7 +90,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     id: "BK-1001",
     guestId: "GUST-7003",
     roomId: "201",
-    roomTypeId: "deluxe",
+    roomTypeId: "premium_sea_view",
     checkInDate: "2026-06-18",
     checkOutDate: "2026-06-21",
     numberOfGuests: 2,
@@ -151,7 +105,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     id: "BK-1002",
     guestId: "GUST-7004",
     roomId: "301",
-    roomTypeId: "exec",
+    roomTypeId: "executive_suite",
     checkInDate: "2026-06-20",
     checkOutDate: "2026-06-22",
     numberOfGuests: 2,
@@ -165,7 +119,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     id: "BK-1003",
     guestId: "GUST-7001",
     roomId: "102",
-    roomTypeId: "std",
+    roomTypeId: "deluxe",
     checkInDate: "2026-06-15",
     checkOutDate: "2026-06-19",
     numberOfGuests: 1,
@@ -181,7 +135,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     id: "BK-1004",
     guestId: "GUST-7002",
     roomId: "206",
-    roomTypeId: "deluxe",
+    roomTypeId: "premium_sea_view",
     checkInDate: "2026-06-21",
     checkOutDate: "2026-06-25",
     numberOfGuests: 2,
@@ -194,8 +148,8 @@ export const INITIAL_BOOKINGS: Booking[] = [
   {
     id: "BK-1005",
     guestId: "GUST-7005",
-    roomId: "307",
-    roomTypeId: "suite",
+    roomId: "507",
+    roomTypeId: "presidential_suite",
     checkInDate: "2026-06-17",
     checkOutDate: "2026-06-20",
     numberOfGuests: 3,
@@ -210,7 +164,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     id: "BK-1006",
     guestId: "GUST-7001",
     roomId: "302",
-    roomTypeId: "exec",
+    roomTypeId: "executive_suite",
     checkInDate: "2026-06-19",
     checkOutDate: "2026-06-23",
     numberOfGuests: 2,

@@ -7,7 +7,9 @@ import type { RoomType } from "../../types";
 
 type Props = {
   selection: MultiRoomSelection;
+
   roomType?: RoomType;
+
   onChangeAdults?: (adults: number) => void;
   onChangeChildren?: (children: number) => void;
   onChangeRoomTypeId?: (roomTypeId: string) => void;
@@ -30,6 +32,7 @@ export default function RoomCard({
 }: Props) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4">
+
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700/90 dark:text-amber-400">
@@ -45,7 +48,7 @@ export default function RoomCard({
           </div>
 
           <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-            Rate: <span className="font-bold text-slate-800 dark:text-slate-200">₹{selection.rate.toLocaleString()}/Night</span>
+            Rate: <span className="font-bold text-slate-800 dark:text-slate-200">₹{(selection.rate ?? 0).toLocaleString()}/Night</span>
           </div>
         </div>
 
@@ -69,6 +72,8 @@ export default function RoomCard({
           <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">
             Room Type
           </label>
+          {/** DEBUG: roomTypes trace */}
+          {console.log("RoomCard roomTypes", roomTypes)}
           <select
             value={selection.roomTypeId}
             onChange={(e) => onChangeRoomTypeId?.(e.target.value)}
