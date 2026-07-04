@@ -23,7 +23,7 @@ const prisma = new PrismaClient();
 
 
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const STORE_FILE = path.join(process.cwd(), "pms_store.json");
 
 // Dynamic state structures
@@ -1581,7 +1581,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[PMS Applet Backend] Full-Stack server booted in on http://localhost:${PORT}`);
+    console.log(`🚀 Server started on port ${PORT}`);
   });
 }
 
