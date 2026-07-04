@@ -26,6 +26,22 @@ const prisma = new PrismaClient();
 const PORT = Number(process.env.PORT) || 3000;
 const STORE_FILE = path.join(process.cwd(), "pms_store.json");
 
+// Startup logging (production hardening)
+console.log("===============================");
+console.log("PMS STARTUP");
+console.log(`PORT: ${PORT}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV || "development"}`);
+console.log(`STORE_FILE: ${STORE_FILE}`);
+console.log(`STORE EXISTS: ${fs.existsSync(STORE_FILE)}`);
+console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? "Present" : "Missing"}`);
+try {
+  console.log(`RAILWAY_PUBLIC_DOMAIN: ${process.env.PUBLIC_DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || "Missing"}`);
+} catch {
+  // ignore
+}
+console.log("===============================");
+
+
 // Dynamic state structures
 let rooms: Room[] = [...INITIAL_ROOMS];
 let guests: Guest[] = [...INITIAL_GUESTS];
@@ -311,31 +327,61 @@ function reconcileSettlementPayments() {
 }
 
 function loadState() {
-  try {
-    if (fs.existsSync(STORE_FILE)) {
-      const raw = fs.readFileSync(STORE_FILE, "utf-8");
-      const parsed = JSON.parse(raw);
-      if (parsed.rooms) rooms = parsed.rooms;
-      if (parsed.guests) guests = parsed.guests;
-      if (parsed.bookings) bookings = parsed.bookings;
-      if (parsed.payments) payments = parsed.payments;
-      if (parsed.notifications) notifications = parsed.notifications;
-      if (parsed.documents) documents = parsed.documents;
-      if (parsed.activityLogs) activityLogs = parsed.activityLogs;
-      if (parsed.messageLogs) setMessageLogs(parsed.messageLogs);
-      if (parsed.serviceRequests) serviceRequests = parsed.serviceRequests;
-      if (parsed.tourismInquiries) tourismInquiries = parsed.tourismInquiries;
-      if (parsed.feedbacks) feedbacks = parsed.feedbacks;
-      
-      // Self-heal/reconcile payments
-      reconcileSettlementPayments();
+  // Ensure in-memory arrays are always initialized even if store is missing/malformed.
+  rooms = Array.isArray(rooms) ? rooms : [];
+  guests = Array.isArray(guests) ? guests : [];
+  bookings = Array.isArray(bookings) ? bookings : [];
+  payments = Array.isArray(payments) ? payments : [];
+  notifications = Array.isArray(notifications) ? notifications : [];
+  documents = Array.isArray(documents) ? documents : [];
+  activityLogs = Array.isArray(activityLogs) ? activityLogs : [];
+  serviceRequests = Array.isArray(serviceRequests) ? serviceRequests : [];
+  tourismInquiries = Array.isArray(tourismInquiries) ? tourismInquiries : [];
+  feedbacks = Array.isArray(feedbacks) ? feedbacks : [];
 
-      console.log("Loaded existing PMS state from store.");
+  try {
+    if (!fs.existsSync(STORE_FILE)) {
+      console.log("PMS store file not found; starting with defaults.");
+      return;
     }
+
+    const raw = fs.readFileSync(STORE_FILE, "utf-8");
+    const parsed = JSON.parse(raw);
+
+    rooms = Array.isArray(parsed.rooms) ? parsed.rooms : rooms;
+    guests = Array.isArray(parsed.guests) ? parsed.guests : guests;
+    bookings = Array.isArray(parsed.bookings) ? parsed.bookings : bookings;
+    payments = Array.isArray(parsed.payments) ? parsed.payments : payments;
+    notifications = Array.isArray(parsed.notifications) ? parsed.notifications : notifications;
+    documents = Array.isArray(parsed.documents) ? parsed.documents : documents;
+    activityLogs = Array.isArray(parsed.activityLogs) ? parsed.activityLogs : activityLogs;
+    serviceRequests = Array.isArray(parsed.serviceRequests) ? parsed.serviceRequests : serviceRequests;
+    tourismInquiries = Array.isArray(parsed.tourismInquiries) ? parsed.tourismInquiries : tourismInquiries;
+    feedbacks = Array.isArray(parsed.feedbacks) ? parsed.feedbacks : feedbacks;
+
+    if (parsed.messageLogs !== undefined) {
+      if (Array.isArray(parsed.messageLogs)) {
+        setMessageLogs(parsed.messageLogs);
+      } else {
+        setMessageLogs([]);
+      }
+    } else {
+      setMessageLogs([]);
+    }
+
+    // Self-heal/reconcile payments
+    if (!Array.isArray(bookings)) bookings = [];
+    if (!Array.isArray(payments)) payments = [];
+    reconcileSettlementPayments();
+
+    console.log("Loaded existing PMS state from store.");
   } catch (error) {
     console.error("Failed to load state, starting with defaults:", error);
+    setMessageLogs([]);
+    // Keep defaults in-memory arrays
   }
 }
+
 
 // Save state to file
 function saveState() {
@@ -369,10 +415,25 @@ async function startServer() {
   
   // Get all state
   app.get("/api/pms/state", (req, res) => {
-    // Map categories and priorities if missing
-    serviceRequests.forEach(r => {
-      if (!r.category) {
-        const typeLower = (r.requestType || "").toLowerCase();
+    try {
+      // Ensure arrays are safe inside handler (store may be partially missing)
+      if (!Array.isArray(serviceRequests)) serviceRequests = [];
+      if (!Array.isArray(tourismInquiries)) tourismInquiries = [];
+      if (!Array.isArray(feedbacks)) feedbacks = [];
+      if (!Array.isArray(messageLogs)) setMessageLogs([]);
+      if (!Array.isArray(rooms)) rooms = [];
+      if (!Array.isArray(guests)) guests = [];
+      if (!Array.isArray(bookings)) bookings = [];
+      if (!Array.isArray(payments)) payments = [];
+      if (!Array.isArray(notifications)) notifications = [];
+      if (!Array.isArray(documents)) documents = [];
+      if (!Array.isArray(activityLogs)) activityLogs = [];
+
+      // Map categories and priorities if missing
+      (Array.isArray(serviceRequests) ? serviceRequests : []).forEach(r => {
+        if (!r.category) {
+          const typeLower = (r.requestType || "").toLowerCase();
+
         const commentsLower = (r.comments || "").toLowerCase();
         
         if (typeLower.includes("water") || typeLower.includes("towel") || typeLower.includes("housekeeping") || typeLower.includes("linen") || typeLower.includes("cleaning") || commentsLower.includes("cleaning") || commentsLower.includes("towel")) {
@@ -417,20 +478,32 @@ async function startServer() {
     });
 
     res.json({
-      rooms,
-      roomTypes: INITIAL_ROOM_TYPES,
-      guests,
-      bookings,
-      payments,
-      notifications,
-      documents,
-      messageLogs,
-      activityLogs,
-      serviceRequests,
-      tourismInquiries,
-      feedbacks
+      success: true,
+      rooms: rooms ?? [],
+      roomTypes: INITIAL_ROOM_TYPES ?? [],
+      guests: guests ?? [],
+      bookings: bookings ?? [],
+      payments: payments ?? [],
+      notifications: notifications ?? [],
+      documents: documents ?? [],
+      messageLogs: messageLogs ?? [],
+      activityLogs: activityLogs ?? [],
+      serviceRequests: serviceRequests ?? [],
+      tourismInquiries: tourismInquiries ?? [],
+      feedbacks: feedbacks ?? []
     });
-  });
+  } catch (err) {
+    console.error("========== API ERROR ==========");
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : ""
+    });
+  }
+});
+
+
 
   // Create Guest Service Request
   app.post("/api/pms/service-requests", (req, res) => {
