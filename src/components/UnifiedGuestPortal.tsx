@@ -11,6 +11,7 @@ import {
 import { Booking, Guest, RoomType, Room } from "../types";
 import { handleExportInvoiceToPDF } from "./BookingManagement";
 import { hotelConfig } from "../config/hotelConfig";
+import { BRANDING } from "../config/hotel/branding";
 import GuestServicePortal from "./GuestServicePortal";
 import ECheckInPortal from "./ECheckInPortal";
 import BookingLookupPortal from "./BookingLookupPortal";

@@ -7,6 +7,9 @@ import React, { useState, useEffect } from "react";
 import { Booking, Guest, Room, RoomType, BookingSource, BookingStatus, PaymentStatus, RoomStatus } from "../types";
 import { PlusCircle, Search, Trash2, Edit3, CheckCircle2, UserPlus, LogIn, LogOut, XCircle, Calendar, CreditCard, ChevronDown, Download, FileText, AlertTriangle } from "lucide-react";
 import { jsPDF } from "jspdf";
+import { HOTEL } from "../config/hotel";
+import { BRANDING } from "../config/hotel";
+
 
 export function handleExportInvoiceToPDF(booking: Booking, guest: Guest | undefined, roomType: RoomType | undefined) {
   const doc = new jsPDF({
@@ -15,33 +18,42 @@ export function handleExportInvoiceToPDF(booking: Booking, guest: Guest | undefi
     format: "a4"
   });
 
-  // Color Definitions matching Niladri Shore Resort Brand
-  const primaryColor = [180, 83, 9];    // Amber-700 / Gold
-  const secondaryColor = [30, 41, 59];  // Slate-800
-  const lightGray = [100, 116, 139];    // Slate-500
+  // Brand colors from config (hex -> rgb)
+  const toRgb = (hex: string) => {
+    const cleaned = hex.replace("#", "");
+    const full = cleaned.length === 3 ? cleaned.split("").map((c) => c + c).join("") : cleaned;
+    const num = parseInt(full, 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255] as const;
+  };
+
+  const [primaryR, primaryG, primaryB] = toRgb(BRANDING.primaryColor);
+  const [secondaryR, secondaryG, secondaryB] = toRgb(BRANDING.secondaryColor);
+  const [lightGrayR, lightGrayG, lightGrayB] = toRgb(BRANDING.secondaryColor);
 
   // 1. Draw top brand color header strip
-  doc.setFillColor(180, 83, 9);
+  doc.setFillColor(primaryR, primaryG, primaryB);
   doc.rect(0, 0, 210, 8, "F");
 
   // 2. Main Title & Resort Info
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(180, 83, 9);
-  doc.text("NILADRI SHORE RESORT & SPA", 15, 23);
+  doc.setTextColor(primaryR, primaryG, primaryB);
+  doc.text(HOTEL.general.hotelName.toUpperCase(), 15, 23);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(100, 116, 139);
-  doc.text("Puri’s Royal Heritage & Coastal Sanctuary", 15, 28);
-  doc.text("Golden Sands Boulevard, Puri Beach, Puri - 752002, Odisha, India", 15, 33);
-  doc.text("Phone: +91 (6752) 224400 | Email: stay@niladrishoreresort.com", 15, 38);
+  doc.setTextColor(lightGrayR, lightGrayG, lightGrayB);
+
+  // Hotel address, phone, email dynamically
+  doc.text(`${HOTEL.address.line1}, ${HOTEL.address.city}, ${HOTEL.address.state} ${HOTEL.address.pin}, ${HOTEL.address.country}`, 15, 33);
+  doc.text(`Phone: ${BRANDING.phone} | Email: ${BRANDING.email}`, 15, 38);
 
   // Invoice Details Header (Right Aligned)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  doc.setTextColor(30, 41, 59);
+  doc.setTextColor(secondaryR, secondaryG, secondaryB);
   doc.text("INVOICE RECEIPT", 145, 23);
+
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -215,7 +227,11 @@ export function handleExportInvoiceToPDF(booking: Booking, guest: Guest | undefi
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(180, 83, 9);
-  doc.text("NILADRI POLICIES & TRADITIONAL DISCLOSURES:", 18, 221);
+  const policyHeader = `${HOTEL.general.hotelName.toUpperCase()} POLICIES & TRADITIONAL DISCLOSURES:`;
+  doc.setTextColor(primaryR, primaryG, primaryB);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text(policyHeader, 18, 221);
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 116, 139);
@@ -224,16 +240,17 @@ export function handleExportInvoiceToPDF(booking: Booking, guest: Guest | undefi
   doc.text("• Standard check-out must be finished before 11:00 AM so chamber sweepers can prepare the suites.", 18, 236);
   doc.text("• For custom seafood shore tours, connect directly with our butler desk 2 hours in advance.", 18, 241);
 
-  // 8. Chariot Wheel bottom motif / Blessing
+  // 8. Blessing footer
   doc.setFont("helvetica", "bolditalic");
   doc.setFontSize(9);
-  doc.setTextColor(180, 83, 9);
+  doc.setTextColor(primaryR, primaryG, primaryB);
   doc.text("May the divine blessings of Lord Jagannath guide your journeys.", 105, 260, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.setTextColor(148, 163, 184);
-  doc.text("Niladri Shore Property Management invoice receipt generator. Powered by Google Cloud.", 105, 265, { align: "center" });
+  doc.setTextColor(lightGrayR, lightGrayG, lightGrayB);
+  doc.text(`${HOTEL.general.hotelName} invoice receipt generator. Powered by Google Cloud.`, 105, 265, { align: "center" });
+
 
   // Save the PDF
   doc.save(`Invoice_${booking.id.toUpperCase()}.pdf`);
