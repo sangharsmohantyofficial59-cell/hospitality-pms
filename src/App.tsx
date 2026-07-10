@@ -753,7 +753,7 @@ export default function App() {
             </main>
 
             <footer className="bg-slate-900 border-t border-slate-800 py-4 text-center text-slate-500 text-[10px] font-mono leading-none">
-              <span>Authorized hotel terminal logged to Grand Crest 18 Park St. Work session active. Secure environment.</span>
+              <span>Authorized hotel terminal for {hotelConfig.info.name}. Work session active. Secure environment.</span>
             </footer>
           </div>
         ) : (

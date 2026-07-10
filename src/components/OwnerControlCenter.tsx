@@ -15,6 +15,8 @@ import {
   Tooltip, BarChart, Bar, Cell, PieChart, Pie
 } from "recharts";
 import { Room, Guest, Booking } from "../types";
+import { hotelConfig } from "../config/hotelConfig";
+
 
 interface OwnerControlCenterProps {
   bookings: Booking[];
@@ -273,7 +275,7 @@ export default function OwnerControlCenter({
                 </span>
               </div>
               <p className="text-slate-400 text-xs mt-1">
-                Real-time resort indicators, leaks control, feedback recovery mechanisms and tourism concierge dispatchers at Niladri Shore, Puri.
+                Real-time resort indicators, leaks control, feedback recovery mechanisms and tourism concierge dispatchers at {hotelConfig.info.name}, {hotelConfig.contact.address}.
               </p>
             </div>
           </div>
@@ -539,7 +541,7 @@ export default function OwnerControlCenter({
               <h4 className="text-3xl font-extrabold text-white ">{repeatGuestPercent}%</h4>
               <p className="font-mono text-[10px] text-slate-500 uppercase tracking-widest font-bold">REPEATED VISITS PROXIMITY</p>
               <p className="text-[10px] text-slate-400 leading-relaxed">
-                Over a third of checkout guests reserve again or recommend Niladri Shore beachfront.
+                Over a third of checkout guests reserve again or recommend this hotel beachfront experience.
               </p>
             </div>
 

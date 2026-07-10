@@ -50,147 +50,16 @@ let bookings: Booking[] = [...INITIAL_BOOKINGS];
 let payments: Payment[] = [...INITIAL_PAYMENTS];
 let notifications: Notification[] = [...INITIAL_NOTIFICATIONS];
 let documents: UploadedDocument[] = [];
-let activityLogs: any[] = [
-  {
-    id: "ACT-7001",
-    timestamp: new Date(Date.now() - 3600000 * 20).toISOString(),
-    action: "Login Event",
-    user: "Saurav Sen (Owner)",
-    details: "Owner Saurav Sen logged in from primary executive desktop (SSO validated).",
-    icon: "login"
-  },
-  {
-    id: "ACT-7002",
-    timestamp: new Date(Date.now() - 3600000 * 18).toISOString(),
-    action: "Reservation Creation",
-    user: "Website Engine",
-    details: "New booking BK-1001 for John Doe (Mahodadhi Sea-Facing Royal Suite) received with Advance Payment of ₹6,250.",
-    icon: "create"
-  },
-  {
-    id: "ACT-7003",
-    timestamp: new Date(Date.now() - 3600000 * 15).toISOString(),
-    action: "Room Assignment",
-    user: "Rajesh Kumar (Front Desk)",
-    details: "Room 302 assigned to Booking BK-1002 (Jagannath Temple Heritage Family).",
-    icon: "room"
-  },
-  {
-    id: "ACT-7004",
-    timestamp: new Date(Date.now() - 3600000 * 12).toISOString(),
-    action: "Discounts Applied",
-    user: "Rajesh Kumar (Front Desk)",
-    details: "10% privilege discount applied to Booking BK-1003 billing ledger.",
-    icon: "discount"
-  },
-  {
-    id: "ACT-7005",
-    timestamp: new Date(Date.now() - 3600000 * 8).toISOString(),
-    action: "Invoice Generation",
-    user: "System Ledger",
-    details: "Generated GST-compliant invoice #INV-2026-068 for Booking BK-5002.",
-    icon: "invoice"
-  },
-  {
-    id: "ACT-7006",
-    timestamp: new Date(Date.now() - 3600000 * 4).toISOString(),
-    action: "Payment Collection",
-    user: "Rajesh Kumar (Front Desk)",
-    details: "Settle billing collection of ₹9,400 via UPI for booking BK-1001.",
-    icon: "payment"
-  },
-  {
-    id: "ACT-7007",
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-    action: "Checkout Events",
-    user: "Rajesh Kumar (Front Desk)",
-    details: "Completed guest keys handover and checked out booking BK-1001.",
-    icon: "checkout"
-  }
-];
+let activityLogs: any[] = [];
+
 
 // Guest services, tourism concierge and smart feedback collections
-let serviceRequests: any[] = [
-  {
-    id: "REQ-3001",
-    bookingId: "BK-1002",
-    guestName: "Priya Sharma",
-    roomId: "102",
-    requestType: "Drinking Water",
-    status: "Completed",
-    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
-    comments: "Deliver 2 bottles of mineral water."
-  },
-  {
-    id: "REQ-3002",
-    bookingId: "BK-1003",
-    guestName: "Arun Joshi",
-    roomId: "204",
-    requestType: "Extra Towels",
-    status: "In Progress",
-    timestamp: new Date(Date.now() - 3600000 * 1).toISOString(),
-    comments: "Needs 2 extra pool towels desperately."
-  },
-  {
-    id: "REQ-3003",
-    bookingId: "BK-1001",
-    guestName: "John Doe",
-    roomId: "302",
-    requestType: "Late Checkout",
-    status: "Pending",
-    timestamp: new Date(Date.now() - 1800000).toISOString(),
-    comments: "Requesting checkout at 2:00 PM due to evening flight departure."
-  }
-];
+let serviceRequests: any[] = [];
 
-let tourismInquiries: any[] = [
-  {
-    id: "TOU-4001",
-    guestId: "G-1001",
-    guestName: "John Doe",
-    tourType: "Jagannath Temple Visit",
-    status: "Confirmed",
-    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
-    notes: "Requires pandit guide assistant, 4 people. Confirmed with panda priest.",
-    date: "2026-06-22"
-  },
-  {
-    id: "TOU-4002",
-    guestId: "G-1002",
-    guestName: "Priya Sharma",
-    tourType: "Konark Tour",
-    status: "Requested",
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-    notes: "Looking for private air-conditioned vehicle. Departure 8:00 AM.",
-    date: "2026-06-23"
-  }
-];
+let tourismInquiries: any[] = [];
 
-let feedbacks: any[] = [
-  {
-    id: "FB-5001",
-    bookingId: "BK-1002",
-    guestName: "Priya Sharma",
-    roomId: "102",
-    rating: 5,
-    comments: "Stellar ocean views and highly accommodating traditional staff. Jai Jagannath!",
-    isServiceRecovery: false,
-    serviceRecoveryStatus: "Resolved",
-    timestamp: new Date(Date.now() - 3600000 * 4).toISOString()
-  },
-  {
-    id: "FB-5002",
-    bookingId: "BK-1003",
-    guestName: "Arun Joshi",
-    roomId: "204",
-    rating: 2,
-    comments: "The air conditioning was blowing warm air for the first 3 hours and receptionist took a while to address it.",
-    isServiceRecovery: true,
-    serviceRecoveryStatus: "Pending",
-    issueCategory: "Room Issue",
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString()
-  }
-];
+let feedbacks: any[] = [];
+
 
 // Load state from file if exists
 function reconcileSettlementPayments() {
@@ -770,24 +639,10 @@ roomTypes: (HOTEL_ROOM_TYPES ?? []).map((rt) => ({
     notifications = [...INITIAL_NOTIFICATIONS];
     documents = [];
     setMessageLogs([]);
-    activityLogs = [
-      {
-        id: "ACT-7001",
-        timestamp: new Date(Date.now() - 3600000 * 20).toISOString(),
-        action: "Login Event",
-        user: "Saurav Sen (Owner)",
-        details: "Owner Saurav Sen logged in from primary executive desktop (SSO validated).",
-        icon: "login"
-      },
-      {
-        id: "ACT-7002",
-        timestamp: new Date(Date.now() - 3600000 * 18).toISOString(),
-        action: "Reservation Creation",
-        user: "Website Engine",
-        details: "New online reservation created for guest John Doe (BK-1001)",
-        icon: "create"
-      }
-    ];
+    serviceRequests = [];
+    tourismInquiries = [];
+    feedbacks = [];
+    activityLogs = [];
     saveState();
     res.json({ success: true, message: "PMS state restored successfully." });
   });

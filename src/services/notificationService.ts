@@ -80,12 +80,14 @@ export async function sendEmail({
   const id = `MSG-${Date.now().toString().slice(-4)}-E`;
 
   const transporter = await getTransporter();
+  // Use config-driven sender identity. Keep SMTP_FROM as override.
   const fromEmail = process.env.SMTP_FROM || "bookings@grandcrestkolkata.com";
+  const fromDisplayName = (process.env.SMTP_FROM_DISPLAY_NAME || "").trim() || "Hotel Notifications";
 
   if (transporter) {
     try {
       const info = await transporter.sendMail({
-        from: `"Grand Crest Hotel" <${fromEmail}>`,
+        from: `"${fromDisplayName}" <${fromEmail}>`,
         to: toEmail,
         subject,
         text: textBody,
@@ -175,7 +177,9 @@ export async function sendWhatsApp({
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromWhatsApp = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886"; // Default Twilio Sandbox Number
+  // Fail gracefully: do not fall back to hardcoded Twilio sandbox numbers.
+  const fromWhatsApp = process.env.TWILIO_WHATSAPP_FROM;
+
 
   if (accountSid && authToken) {
     try {
@@ -255,10 +259,11 @@ export function generateTemplates(
   "https://hospitality-pms-production.up.railway.app";
   
   if (event === "booking_confirmation") {
-    const subject = `Reservation Confirmed: Your Stay at Grand Crest (${booking.id})`;
+    const subject = `Reservation Confirmed: Your Stay at ${process.env.HOTEL_NAME || "Serene Bay Resort & Spa"} (${booking.id})`;
     const textBody = `Dear ${guest.name},
 
-Your reservation at Grand Crest Hotel (18, Park Street, Kolkata) has been successfully guaranteed.
+Your reservation at ${process.env.HOTEL_NAME || "Serene Bay Resort & Spa"} has been successfully guaranteed.
+
 
 Booking Summary Details:
 - Booking Reference: ${booking.id}
@@ -280,8 +285,9 @@ bookings@grandcrestkolkata.com
     const htmlBody = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:16px;">
         <div style="text-align:center;margin-bottom:24px;">
-          <h1 style="color:#4f46e5;margin:0;font-size:24px;font-weight:800;">Grand Crest Hotel</h1>
-          <p style="color:#64748b;font-size:12px;margin:4px 0 0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;">Park Street, Kolkata</p>
+          <h1 style="color:#4f46e5;margin:0;font-size:24px;font-weight:800;">${process.env.HOTEL_NAME || "Serene Bay Resort & Spa"}</h1>
+          <p style="color:#64748b;font-size:12px;margin:4px 0 0;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;">${process.env.HOTEL_ADDRESS_LINE1 || "Plot 14, Marina Beach Road"}</p>
+
         </div>
         <div style="background-color:#f8fafc;padding:20px;border-radius:12px;margin-bottom:24px;border:1px solid #f1f5f9;">
           <h2 style="margin-top:0;font-size:16px;color:#0f172a;font-weight:700;">Reservation Confirmed</h2>

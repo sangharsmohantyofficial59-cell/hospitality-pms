@@ -1,10 +1,14 @@
 export const BRANDING = {
+  // Centralized brand presentation values.
+  // NOTE: These are production-presentation config only.
   hotelName: "Serene Bay Resort & Spa",
   brandName: "Serene Collection",
 
   logo: {
-    placeholderSvg: "[UPLOAD: hotel logo SVG placeholder]",
-    placeholderPng: "[UPLOAD: hotel logo PNG placeholder]",
+    // Keep as-is (no business logic) but remove placeholder marker.
+    // If you have real assets, replace these paths with real URLs/files.
+    placeholderSvg: "",
+    placeholderPng: "",
   },
 
   primaryColor: "#0B5D6F",
@@ -14,18 +18,23 @@ export const BRANDING = {
     body: "Inter",
   },
 
-  email: "reservations@serenebayresort.demo",
+  // Support contact details (used across UI/email/PDF).
+  email: "reservations@serenebayresort.com",
   phone: "+91-6752-223344",
-  website: "www.serenebayresort.demo",
+  website: "www.serenebayresort.com",
 
+  // Favicon/manifest references.
+  // These must point to actual public assets when deploying.
   favicon: {
-    appleTouch180: "[UPLOAD: favicon 180x180 placeholder]",
-    icon32: "[UPLOAD: favicon 32x32 placeholder]",
-    icon512: "[UPLOAD: favicon 512x512 placeholder]",
+    appleTouch180: "",
+    icon32: "",
+    icon512: "",
   },
 
   invoiceHeaderNote: "Logo left; GSTIN/CIN right; hotel address centered",
 } as const;
 
+
 export type Branding = typeof BRANDING;
+
 

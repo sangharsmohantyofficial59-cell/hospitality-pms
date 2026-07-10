@@ -1,6 +1,7 @@
 {
-  "name": "Remix: Remix: Hospitality Template Engine v1",
-  "description": "A comprehensive full-stack Property Management System (PMS) and customer booking engine for a 30-room hotel in Puri, Odisha, themed around coastal luxury, spiritual heritage of Shree Jagannath, and local beach tourism with automatic messaging dispatches.",
+  "name": "Serene Bay Resort & Spa - Hotel PMS",
+  "description": "Production-ready Property Management System (PMS) for Serene Bay Resort & Spa (Puri, Odisha) with guest portal booking and staff operations.",
+
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

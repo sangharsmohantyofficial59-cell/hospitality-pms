@@ -637,7 +637,7 @@ export default function UnifiedGuestPortal({
               </span>
             </div>
             
-            <h1 className="text-3xl font-extrabold tracking-tight font-sans text-white">Grand Crest Guest Experience Hub</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight font-sans text-white">{hotelConfig.info.name} Guest Experience Hub</h1>
             <p className="text-amber-100/85 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
               Unlock room access codes, summon instant room supplies, plan temple private tours, check ledger billing transactions, and provide ratings.
             </p>
@@ -1395,8 +1395,9 @@ export default function UnifiedGuestPortal({
                   <div className="space-y-2 text-xs font-mono">
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850">
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white">Grand Crest Resort, Puri</p>
-                        <p className="text-[10px] text-slate-500 font-mono">08-May-2025 to 11-May-2025</p>
+                        <p className="font-bold text-slate-900 dark:text-white">{hotelConfig.info.name}</p>
+                    <p className="text-[10px] text-slate-500 font-mono">08-May-2025 to 11-May-2025</p>
+
                       </div>
                       <span className="text-[10px] font-bold text-emerald-600 uppercase font-mono">Checked Out ✓</span>
                     </div>
@@ -1560,7 +1561,8 @@ export default function UnifiedGuestPortal({
                 </span>
                 <h4 className="text-base font-bold mt-1 text-white">Instant Settler Desk</h4>
                 <p className="text-slate-450 text-[11px] mt-1.5 leading-relaxed">
-                  Scan the dynamic Grand Crest UPI QR to bypass long queues. Payments register immediately in the reception terminals via webhook loops.
+                  Scan the dynamic {BRANDING.website} UPI QR to bypass long queues. Payments register immediately in the reception terminals via webhook loops.
+
                 </p>
 
                 {/* Simulated QR block */}

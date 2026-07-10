@@ -1,38 +1,23 @@
-# Sprint 5.1 - Ticket B (Revised) - Prisma booking creation migration
+# TODO - Phase A (Blocking fixes)
 
-## Plan & Implementation Steps
+## Phase A scope
+Edit only these files:
+1) `src/services/notificationService.ts`
+2) `src/components/MessageTemplates.tsx`
+3) `src/components/CustomerWebsite.tsx` (Contact section only)
 
-1. Create Prisma Client helper (server-only) and wire it into server.ts.
-   - Ensure it uses existing prisma/schema.prisma and prisma.config.ts approach.
-   - Add DATABASE_URL support via env.
+Forbidden strings to remove in those files:
+- Grand Crest
+- Grand Crest Hotel
+- Grand Crest Kolkata
+- Niladri
+- BK-NILADRI
 
-2. Add migrated Prisma persistence for ONLY booking creation endpoint:
-   - Locate `app.post("/api/pms/bookings"...)` handler in server.ts.
-   - Replace `guests/bookings.push(...)` persistence for the new booking with Prisma writes.
-   - Keep all other arrays (rooms/payments/notifications/etc.) and JSON persistence untouched.
-
-3. Preserve legacy API response format:
-   - The endpoint must still respond with `{ success: true, booking: newBooking, guest }` shape.
-   - `newBooking` must remain identical to current in-memory structure.
-
-4. Implement Prisma mapping:
-   - Map request payload → `Tenant/Hotel` assumptions consistent with existing project.
-   - Ensure Booking + Guest upsert/creates in Prisma.
-   - Do not migrate room assignment/check-in/check-out/payments.
-
-5. Add defensive fallback behavior:
-   - If Prisma fails, return 500 with legacy error shape (or keep current error handling) without breaking other endpoints.
-
-6. Add comments identifying migrated code regions.
-
-7. Run TypeScript check + quick server compile check.
-
-## Migration progress tracking
-- [ ] Step 1: Prisma Client helper created
-- [ ] Step 2: server.ts booking create endpoint migrated
-- [ ] Step 3: Legacy response format preserved
-- [ ] Step 4: Prisma mapping implemented
-- [ ] Step 5: Fallback/defensive behavior
-- [ ] Step 6: Migration comments added
-- [ ] Step 7: tsc / start build verified
+## Steps
+- [ ] 1. Update `src/services/notificationService.ts` to remove all Grand Crest/Niladri/BK-NILADRI branding and use `hotelConfig`/`BRANDING`/`HOTEL` values.
+- [ ] 2. Update `src/components/MessageTemplates.tsx` to remove Niladri/BK-NILADRI and niladri-resorts.com URLs; replace with `hotelConfig`/`BRANDING`.
+- [ ] 3. Update `src/components/CustomerWebsite.tsx` contact tab only to remove Niladri branding and hardcoded contact identity; use `hotelConfig`/`BRANDING`.
+- [ ] 4. Run `npm run build`.
+- [ ] 5. Run a Windows `findstr` search on the three edited files for forbidden strings; ensure zero matches.
+- [ ] 6. Report files modified, build result, search result.
 

@@ -20,10 +20,12 @@ export const HOTEL = {
   },
 
   legal: {
-    gstin: "21ABCDE1234F1Z5 (demo)",
-    pan: "ABCDE1234F (demo)",
-    cin: "U55101OR2015PTC012345 (demo)",
+    // Leave empty when unavailable; keep values configurable.
+    gstin: "",
+    pan: "",
+    cin: "",
   },
+
 
   checkIn: {
     time: "2:00 PM",

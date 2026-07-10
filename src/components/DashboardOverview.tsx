@@ -101,14 +101,14 @@ export default function DashboardOverview({
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             {isReceptionist ? "Front Desk Operations Dashboard" : "Property Executive Summary"}
           </h1>
-          <p className="text-slate-500 text-xs mt-0.5">Real-time status indicators for Grand Crest (30-Rooms system state)</p>
+          <p className="text-slate-500 text-xs mt-0.5">Real-time status indicators for {hotelConfig.info.name} ({rooms.length || 30}-Room system state)</p>
         </div>
         <div className="flex items-center gap-2 font-mono text-xs">
           <span className="bg-emerald-50 text-emerald-700 py-1 px-3 border border-emerald-200 rounded-full font-semibold flex items-center gap-1.5 animate-pulse">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Live System Status
           </span>
           <span className="bg-slate-100 py-1 px-3 border border-slate-200 rounded-full font-medium text-slate-600">
-            System Local Time: 12:16 PM
+            System Local Time: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
       </div>
