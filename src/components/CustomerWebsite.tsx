@@ -45,7 +45,28 @@ import {
 } from "lucide-react";
 import { hotelConfig } from "../config/hotelConfig";
 import { MEDIA } from "../config/hotel/media";
+import HeroBackgroundSlider from "./HeroBackgroundSlider";
 
+// -----------------------------
+// MEDIA helpers
+// -----------------------------
+const ROOM_MEDIA_KEY_MAP: Record<string, keyof typeof MEDIA.roomImages> = {
+  deluxe: "deluxe",
+  premium_sea_view: "premium",
+  executive_suite: "executive",
+  family_room: "familySuite",
+  presidential_suite: "presidentialSuite",
+};
+
+const getRoomThumbnailImages = (roomTypeId: string): string[] => {
+  const key = ROOM_MEDIA_KEY_MAP[roomTypeId];
+  if (!key) return [];
+  return MEDIA.roomImages[key] ?? [];
+};
+
+function getFirst<T>(arr: T[]): T | undefined {
+  return arr?.[0];
+}
 
 
 // Dynamic Icon Mapping
@@ -104,19 +125,7 @@ export default function CustomerWebsite({
   const [selectedRoomTypeId, setSelectedRoomTypeId] = useState<string>("");
 
   // -------- Media helpers (build-safe with empty arrays) --------
-  const getRoomMediaImages = (roomTypeId: string): string[] => {
-    // Map roomType ids -> MEDIA.roomImages keys
-    const map: Record<string, keyof typeof MEDIA.roomImages> = {
-      deluxe: "deluxe",
-      premium_sea_view: "premium",
-      executive_suite: "executive",
-      family_room: "familySuite",
-      presidential_suite: "presidentialSuite",
-    };
-    const key = map[roomTypeId];
-    if (!key) return [];
-    return MEDIA.roomImages[key] ?? [];
-  };
+  const getRoomMediaImages = (roomTypeId: string): string[] => getRoomThumbnailImages(roomTypeId);
 
 
   // Multi-room booking UI state (front-end only, payload structure unchanged)
@@ -619,14 +628,26 @@ export default function CustomerWebsite({
           
           {/* HERO SECTION */}
           <div className="relative bg-slate-950 overflow-hidden min-h-[700px] lg:min-h-[820px] flex items-center">
-            {/* Cinematic Background */}
+            {/* Cinematic Background (MEDIA hero slider) */}
             <div className="absolute inset-0 z-0">
-              <img
-                src={hotelConfig.hero.images[0]}
-                alt={hotelConfig.info.name}
-                className="w-full h-full object-cover opacity-50 scale-100 transition-transform duration-1000 ease-out"
-                referrerPolicy="no-referrer"
-              />
+              {(() => {
+                const heroImages = MEDIA.heroImages ?? [];
+                if (!heroImages.length) {
+                  return (
+                    <img
+                      src={hotelConfig.hero.images[0]}
+                      alt={hotelConfig.info.name}
+                      className="w-full h-full object-cover opacity-50 scale-100 transition-transform duration-1000 ease-out"
+                      referrerPolicy="no-referrer"
+                    />
+                  );
+                }
+
+                return (
+                  <HeroBackgroundSlider images={heroImages.map((i) => ({ id: i.id, src: i.src, alt: i.alt }))} />
+                );
+              })()}
+
               {/* Grand Luxury Hotel Dark-Slate & Sand Gold Vignette */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/30 to-transparent"></div>
@@ -796,7 +817,7 @@ export default function CustomerWebsite({
                   <div key={room.id} className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/55 dark:border-slate-800 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
                     <div className="h-52 relative overflow-hidden">
                       <img 
-                        src={room.imageUrl} 
+                        src={getFirst(getRoomMediaImages(room.id)) ?? room.imageUrl}
                         alt={room.name} 
                         className="w-full h-full object-cover hover:scale-105 transition-transform" 
                         referrerPolicy="no-referrer"
@@ -916,6 +937,7 @@ export default function CustomerWebsite({
           </div>
 
           {/* GALLERY SECTION */}
+          {(Array.isArray(MEDIA.galleryImages) && MEDIA.galleryImages.length > 0) && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div className="text-center max-w-xl mx-auto mb-12">
               <span className="font-mono text-xs tracking-wider text-amber-600 dark:text-amber-400 uppercase font-bold">Visual Splendor</span>
@@ -923,9 +945,10 @@ export default function CustomerWebsite({
               <p className="text-slate-500 dark:text-slate-400 text-xs mt-2">Glimpses of {hotelConfig.info.name} accommodations, services, and local attractions.</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {hotelConfig.gallery.map((img, idx) => (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {MEDIA.galleryImages.map((img, idx) => (
                 <div key={idx} className="relative group rounded-xl overflow-hidden h-48 md:h-60 border border-slate-200/50 dark:border-slate-800 shadow-sm">
+
                   <img 
                     src={img.url} 
                     alt={img.caption} 
@@ -939,6 +962,79 @@ export default function CustomerWebsite({
               ))}
             </div>
           </div>
+          )}
+
+          {/* POOL & SPA SECTION — hidden when both arrays are empty */}
+          {(MEDIA.poolImages.length > 0 || MEDIA.spaImages.length > 0) && (
+            <div className="bg-slate-950 text-white py-20 relative overflow-hidden">
+              {/* Subtle ambient glow */}
+              <div className="absolute inset-0 opacity-5 pointer-events-none">
+                <div className="absolute bottom-0 left-1/4 w-96 h-96 rounded-full bg-sky-400 filter blur-3xl"></div>
+                <div className="absolute top-0 right-1/4 w-64 h-64 rounded-full bg-amber-500 filter blur-3xl"></div>
+              </div>
+
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div className="text-center max-w-xl mx-auto mb-14">
+                  <span className="font-mono text-xs tracking-wider text-amber-400 uppercase font-bold">Wellness &amp; Recreation</span>
+                  <h2 className="text-3xl font-bold font-sans text-white mt-2">Pool &amp; Spa Sanctuary</h2>
+                  <div className="w-12 h-1 bg-amber-500 mx-auto mt-3"></div>
+                  <p className="text-slate-400 text-xs mt-4">Rejuvenate body and soul at our infinity pool and award-winning Ayurvedic spa overlooking the Bay of Bengal.</p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                  {/* Pool Images Strip */}
+                  {MEDIA.poolImages.length > 0 && (
+                    <div>
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-amber-400 block mb-4">Infinity Pool</span>
+                      <div className="grid gap-3">
+                        {MEDIA.poolImages.slice(0, 3).map((src, idx) => (
+                          <div key={idx} className={`rounded-2xl overflow-hidden border border-slate-800 shadow-lg ${idx === 0 ? "h-64" : "h-40"}`}>
+                            <img
+                              src={src}
+                              alt={`Pool view ${idx + 1}`}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 opacity-90"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Spa Section */}
+                  {MEDIA.spaImages.length > 0 && (
+                    <div>
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-amber-400 block mb-4">Ayurvedic Spa</span>
+                      <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-lg h-64">
+                        <img
+                          src={MEDIA.spaImages[0].src}
+                          alt={MEDIA.spaImages[0].alt || "Spa treatment room"}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 opacity-90"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div className="mt-4 p-5 bg-slate-900/60 border border-slate-800 rounded-2xl">
+                        <h4 className="font-sans font-bold text-white text-base">Niladri Ayurvedic Spa</h4>
+                        <p className="text-slate-400 text-xs mt-2 leading-relaxed">Experience holistic healing through ancient Ayurvedic traditions. Our certified therapists offer personalised treatments using organic, locally-sourced herbs and oils.</p>
+                        <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-400">
+                          <span>✓ Swedish Massage</span>
+                          <span>✓ Shirodhara</span>
+                          <span>✓ Aromatherapy</span>
+                          <span>✓ Deep Tissue</span>
+                        </div>
+                        <button
+                          onClick={() => setTab("booking")}
+                          className="mt-5 px-5 py-2 bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-amber-600 hover:text-white transition-all cursor-pointer"
+                        >
+                          Arrange Spa Session
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* SPONSOR / BOOKING ESCAPES BANNER */}
           <section className="bg-amber-500 text-slate-950 py-16">
@@ -1230,7 +1326,7 @@ export default function CustomerWebsite({
                 }`}
               >
                 <div className="w-full md:w-5/12 h-64 md:h-96 relative">
-                  <img src={room.imageUrl} alt={room.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <img src={getFirst(getRoomMediaImages(room.id)) ?? room.imageUrl} alt={room.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   {/* Total count of rooms badge */}
                   <span className="absolute top-4 left-4 bg-slate-950/90 border border-amber-400/20 text-white px-2.5 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider">
                     Tier Inventory: {rooms.filter(cr => cr.roomTypeId === room.id).length} rooms
@@ -2414,14 +2510,17 @@ export default function CustomerWebsite({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="rounded-2xl overflow-hidden h-[400px] shadow-lg">
-              <img 
-                src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80" 
-                alt="Signature dining room" 
-                className="w-full h-full object-cover" 
-                referrerPolicy="no-referrer"
-              />
-            </div>
+            {/* First restaurant image from MEDIA — hidden if unavailable */}
+            {MEDIA.restaurantImages[0]?.src && (
+              <div className="rounded-2xl overflow-hidden h-[400px] shadow-lg">
+                <img
+                  src={MEDIA.restaurantImages[0].src}
+                  alt={MEDIA.restaurantImages[0].alt || "Signature dining room"}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            )}
             <div className="space-y-6">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Signature Restaurant</span>
               <h2 className="text-3xl font-serif font-semibold text-slate-900 dark:text-white">The Mahodadhi Pavilion</h2>
@@ -2442,16 +2541,19 @@ export default function CustomerWebsite({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-20">
-            <div className="space-y-6 md:order-2">
-              <div className="rounded-2xl overflow-hidden h-[400px] shadow-lg">
-                <img 
-                  src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1200&q=80" 
-                  alt="Scenic beachfront lounge bar" 
-                  className="w-full h-full object-cover" 
-                  referrerPolicy="no-referrer"
-                />
+            {/* Second restaurant image from MEDIA — hidden if unavailable */}
+            {MEDIA.restaurantImages[1]?.src && (
+              <div className="space-y-6 md:order-2">
+                <div className="rounded-2xl overflow-hidden h-[400px] shadow-lg">
+                  <img
+                    src={MEDIA.restaurantImages[1].src}
+                    alt={MEDIA.restaurantImages[1].alt || "Scenic beachfront lounge bar"}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               </div>
-            </div>
+            )}
             <div className="space-y-6 md:order-1">
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Open-Air Lounge Deck</span>
               <h2 className="text-3xl font-serif font-semibold text-slate-900 dark:text-white">Blue Horizon Lounge</h2>
@@ -2473,8 +2575,8 @@ export default function CustomerWebsite({
         </div>
       )}
 
-      {/* 6. GALLERY TAB */}
-      {currentTab === "gallery" && (
+      {/* 6. GALLERY TAB — only renders when MEDIA.galleryImages has entries */}
+      {currentTab === "gallery" && Array.isArray(MEDIA.galleryImages) && MEDIA.galleryImages.length > 0 && (
         <div id="customer-gallery-tab" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
           <div className="mb-12 text-center">
             <span className="font-mono text-xs tracking-wider text-amber-600 dark:text-amber-400 uppercase font-bold">Visual Grandeur</span>
@@ -2483,37 +2585,30 @@ export default function CustomerWebsite({
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[
-              { url: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80", title: "Majestic Golden Beach Sunrise" },
-              { url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80", title: "Luxury Royal Sea Suite" },
-              { url: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80", title: "Infinity Beach Lounge Pool" },
-              { url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80", title: "The Mahodadhi Pavilion Fine Dining" },
-              { url: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80", title: "Sunset Yoga on Beachfront Deck" },
-              { url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80", title: "Main Lobby & Concierge" },
-              { url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80", title: "Ayurvedic Treatment & Spa Room" },
-              { url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", title: "Odisha Coastline Vista" }
-            ].map((img, idx) => (
-              <div 
-                key={idx} 
-                onClick={() => setActiveGalleryImage(img.url)}
+            {MEDIA.galleryImages.map((img, idx) => (
+              <div
+                key={(img as any).id ?? idx}
+                onClick={() => setActiveGalleryImage((img as any).src)}
                 className="group relative cursor-pointer overflow-hidden rounded-2xl aspect-[4/3] border border-slate-200/50 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300"
               >
-                <img 
-                  src={img.url} 
-                  alt={img.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                <img
+                  src={(img as any).src}
+                  alt={(img as any).alt || (img as any).caption || "Gallery image"}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <p className="text-white text-xs font-semibold tracking-wide font-sans">{img.title}</p>
-                </div>
+                {((img as any).caption || (img as any).alt) && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                    <p className="text-white text-xs font-semibold tracking-wide font-sans">{(img as any).caption || (img as any).alt}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
 
           {/* GALLERY LIGHTBOX */}
           {activeGalleryImage && (
-            <div 
+            <div
               className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4"
               onClick={() => setActiveGalleryImage(null)}
             >
@@ -2523,6 +2618,28 @@ export default function CustomerWebsite({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* 6b. GALLERY TAB FALLBACK — shown when gallery is empty (no MEDIA.galleryImages) */}
+      {currentTab === "gallery" && (!Array.isArray(MEDIA.galleryImages) || MEDIA.galleryImages.length === 0) && (
+        <div id="customer-gallery-tab-placeholder" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center animate-fade-in">
+          <div className="mb-6 text-center">
+            <span className="font-mono text-xs tracking-wider text-amber-600 dark:text-amber-400 uppercase font-bold">Visual Grandeur</span>
+            <h1 className="text-4xl font-serif font-normal text-slate-900 dark:text-white mt-2 tracking-tight">Our Resort Portfolio</h1>
+          </div>
+          <div className="flex flex-col items-center gap-4 py-16 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
+            <span className="text-5xl">🏨</span>
+            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm">
+              Gallery photos are being curated. Please check back soon for a stunning visual tour of Niladri Shore Resort.
+            </p>
+            <button
+              onClick={() => setTab("rooms")}
+              className="mt-4 px-6 py-2.5 bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-amber-600 hover:text-white transition-all"
+            >
+              View Our Rooms
+            </button>
+          </div>
         </div>
       )}
 
