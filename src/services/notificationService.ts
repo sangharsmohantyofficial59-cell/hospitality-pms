@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
-import twilio from "twilio";
+// NOTE: Twilio WhatsApp removed in Sprint 7 Module 1.
+// All WhatsApp notifications now route through src/services/whatsappService.ts (Meta Cloud API).
 
 export interface SentMessageLog {
   id: string;
@@ -158,94 +159,13 @@ export async function sendEmail({
   }
 }
 
-// Send WhatsApp Notification
-export async function sendWhatsApp({
-  bookingId,
-  guestName,
-  toPhone,
-  event,
-  body
-}: {
-  bookingId: string;
-  guestName: string;
-  toPhone: string;
-  event: SentMessageLog["event"];
-  body: string;
-}): Promise<SentMessageLog> {
-  const sentAt = new Date().toISOString();
-  const id = `MSG-${Date.now().toString().slice(-4)}-W`;
-
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  // Fail gracefully: do not fall back to hardcoded Twilio sandbox numbers.
-  const fromWhatsApp = process.env.TWILIO_WHATSAPP_FROM;
-
-
-  if (accountSid && authToken) {
-    try {
-      console.log(`[NotificationService] Initializing real Twilio WhatsApp API Client`);
-      const client = twilio(accountSid, authToken);
-      
-      // Ensure number formatting has whatsapp prefix for twilio
-      const formattedTo = toPhone.startsWith("whatsapp:") ? toPhone : `whatsapp:${toPhone}`;
-
-      const res = await client.messages.create({
-        body,
-        from: fromWhatsApp,
-        to: formattedTo
-      });
-
-      const log: SentMessageLog = {
-        id,
-        bookingId,
-        guestName,
-        recipient: toPhone,
-        type: "whatsapp",
-        event,
-        subject: `WhatsApp: ${event.replace(/_/g, " ")}`,
-        body,
-        status: "Sent",
-        sentAt
-      };
-      messageLogs.unshift(log);
-      console.log(`[WhatsApp SDK] twilio SMS/WhatsApp successfully delivered to ${toPhone}. Sid: ${res.sid}`);
-      return log;
-    } catch (e: any) {
-      console.error("[WhatsApp SDK] twilio dispatch error:", e);
-      const log: SentMessageLog = {
-        id,
-        bookingId,
-        guestName,
-        recipient: toPhone,
-        type: "whatsapp",
-        event,
-        subject: `WhatsApp: ${event.replace(/_/g, " ")}`,
-        body,
-        status: "Failed",
-        sentAt
-      };
-      messageLogs.unshift(log);
-      return log;
-    }
-  } else {
-    // Pure simulated experience representation
-    const log: SentMessageLog = {
-      id,
-      bookingId,
-      guestName,
-      recipient: toPhone,
-      type: "whatsapp",
-      event,
-      subject: `WhatsApp: ${event.replace(/_/g, " ")}`,
-      body,
-      status: "Simulated",
-      sentAt
-    };
-    messageLogs.unshift(log);
-    console.log(`[Simulated WhatsApp] Sent to ${toPhone} for booking ${bookingId}`);
-    return log;
-  }
-}
+// ── WhatsApp notifications removed from this service (Sprint 7 Module 1) ──────
+// The legacy Twilio sendWhatsApp() has been retired.
+// All WhatsApp messages are now dispatched exclusively via:
+//   src/services/whatsappService.ts  →  Meta WhatsApp Cloud API
+//
+// This service handles email only. See server.ts for the WhatsApp call site.
+// ──────────────────────────────────────────────────────────────────────────────
 
 // Dynamic template generators
 export function generateTemplates(
@@ -490,12 +410,6 @@ export async function sendNotificationEvents(
     htmlBody
   });
 
-  // 2. Dispatch WhatsApp details
-  await sendWhatsApp({
-    bookingId: booking.id,
-    guestName: guest.name,
-    toPhone: guest.phone,
-    event,
-    body: whatsappBody
-  });
+  // 2. WhatsApp dispatch is handled separately in server.ts via whatsappService.ts (Meta Cloud API).
+  //    Calling sendWhatsApp() here has been removed as part of Sprint 7 Module 1 Twilio retirement.
 }

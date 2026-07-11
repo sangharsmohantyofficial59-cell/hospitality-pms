@@ -11,6 +11,8 @@ import { RoomStatus, BookingStatus, PaymentStatus, BookingSource, Booking, Room,
 import { INITIAL_ROOMS, INITIAL_ROOM_TYPES, INITIAL_GUESTS, INITIAL_BOOKINGS, INITIAL_PAYMENTS, INITIAL_NOTIFICATIONS } from "./src/data/initialData";
 import { ROOM_TYPES as HOTEL_ROOM_TYPES } from "./src/config/hotel";
 import { messageLogs, setMessageLogs, sendNotificationEvents } from "./src/services/notificationService";
+import { sendBookingConfirmation as sendWhatsAppBookingConfirmation } from "./src/services/whatsappService";
+import { HOTEL } from "./src/config/hotel/hotel";
 import { ActivityLogService } from "./server/services/ActivityLogService";
 import { GuestService } from "./server/services/GuestService";
 import { RoomService } from "./server/services/RoomService";
@@ -746,7 +748,7 @@ initialRoomTypes: [...HOTEL_ROOM_TYPES] as any[]
     const roomType = INITIAL_ROOM_TYPES.find(rt => rt.id === roomTypeId);
     const roomTypeName = roomType ? roomType.name : "Suite Luxury Stay";
 
-    // Dispatch background confirmation alert notifications
+    // Dispatch background confirmation alert notifications (email + legacy WhatsApp via notificationService)
     sendNotificationEvents("booking_confirmation", newBooking, guest, roomTypeName)
       .then(() => {
         saveState();
@@ -756,6 +758,46 @@ initialRoomTypes: [...HOTEL_ROOM_TYPES] as any[]
         saveState();
         console.error("Error dispatching booking confirmation notifications:", err);
       });
+
+    // ── Sprint 7 Module 1: Meta WhatsApp Cloud API confirmation ──────────────
+    // Fires after booking is confirmed. Failure is logged — booking NOT rolled back.
+    if (guest?.phone) {
+      const hotelAddress = `${HOTEL.address.line1}, ${HOTEL.address.city}, ${HOTEL.address.state} ${HOTEL.address.pin}`;
+      const googleMapsUrl = `https://maps.google.com/?q=${HOTEL.coordinates.lat},${HOTEL.coordinates.lng}`;
+
+      sendWhatsAppBookingConfirmation({
+        bookingId: bookingId,
+        guestName: guest.name ?? guestName,
+        toPhone: guest.phone,
+        vars: {
+          hotelName: process.env.HOTEL_NAME ?? HOTEL.general.hotelName,
+          guestName: guest.name ?? guestName,
+          bookingId: bookingId,
+          roomType: roomTypeName,
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
+          guestCount: numberOfGuests ?? 1,
+          paymentStatus: newBooking.paymentStatus ?? "Pending",
+          hotelPhone: process.env.HOTEL_PHONE ?? "+91-6752-223344",
+          hotelAddress,
+          googleMapsUrl,
+        },
+      })
+        .then(result => {
+          console.log(
+            `[WhatsApp] Confirmation dispatched | Booking: ${bookingId} | Phone: ${result.phone} | Status: ${result.status}` +
+            (result.metaMessageId ? ` | Meta MsgID: ${result.metaMessageId}` : "")
+          );
+          saveState();
+        })
+        .catch(err => {
+          // WhatsApp failure must NEVER affect booking outcome
+          console.error(`[WhatsApp] Dispatch error for ${bookingId} — booking unaffected:`, err);
+        });
+    } else {
+      console.warn(`[WhatsApp] Skipping confirmation for ${bookingId} — guest phone missing.`);
+    }
+    // ── End Sprint 7 Module 1 ────────────────────────────────────────────────
 
     // ------------------------------------------------------------
     // [Dual-write Phase 2] Prisma write AFTER legacy JSON creation

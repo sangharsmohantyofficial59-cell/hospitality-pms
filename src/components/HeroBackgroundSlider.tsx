@@ -12,8 +12,10 @@ type Props = {
 
 /**
  * HeroBackgroundSlider
- * - Shows first image immediately.
- * - Auto-rotates every 5 seconds with a smooth cross-fade.
+ * - Shows first image immediately (no delay, no white flash).
+ * - Auto-rotates every 4 seconds with a smooth cross-fade (~700ms).
+ * - Images render at full vibrancy — no opacity reduction on base image.
+ * - Overlay handled by the parent container, not here.
  * - No external libraries.
  * - Responsive: fills the parent absolutely-positioned container.
  */
@@ -27,7 +29,7 @@ export default function HeroBackgroundSlider({ images }: Props) {
   const [next, setNext] = useState<number | null>(null);
   const [fading, setFading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fadeDuration = 800; // ms
+  const fadeDuration = 700; // ms — smooth, responsive crossfade
 
   useEffect(() => {
     if (safeImages.length < 2) return;
@@ -44,7 +46,7 @@ export default function HeroBackgroundSlider({ images }: Props) {
       }, fadeDuration);
     };
 
-    const interval = setInterval(rotate, 5000);
+    const interval = setInterval(rotate, 4000); // 4-second interval
     return () => {
       clearInterval(interval);
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -59,17 +61,18 @@ export default function HeroBackgroundSlider({ images }: Props) {
 
   return (
     <div className="absolute inset-0 z-0" aria-hidden="true">
-      {/* Base (current) image */}
+      {/* Base (current) image — full opacity for vibrant, sharp display */}
       <img
         key={currentImg.id}
         src={currentImg.src}
         alt={currentImg.alt || "Hotel hero"}
-        className="absolute inset-0 w-full h-full object-cover opacity-50"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: 1 }}
         referrerPolicy="no-referrer"
         draggable={false}
       />
 
-      {/* Next image fades in on top */}
+      {/* Next image fades in on top during transition */}
       {nextImg && (
         <img
           key={nextImg.id}
@@ -77,7 +80,7 @@ export default function HeroBackgroundSlider({ images }: Props) {
           alt={nextImg.alt || "Hotel hero"}
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            opacity: fading ? 0.5 : 0,
+            opacity: fading ? 1 : 0,
             transition: `opacity ${fadeDuration}ms ease-in-out`,
           }}
           referrerPolicy="no-referrer"

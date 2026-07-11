@@ -108,6 +108,23 @@ interface CustomerWebsiteProps {
   onNewBooking: (formData: any) => Promise<any>;
 }
 
+const getTodayString = (): string => {
+  const date = new Date();
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const getTwoDaysLaterString = (): string => {
+  const date = new Date();
+  date.setDate(date.getDate() + 2);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 export default function CustomerWebsite({
   roomTypes,
   rooms,
@@ -116,13 +133,14 @@ export default function CustomerWebsite({
   setTab,
   onNewBooking
 }: CustomerWebsiteProps) {
-  console.log("CustomerWebsite roomTypes", roomTypes);
+  console.log("roomTypes.length", roomTypes.length);
   
   // Search parameters for Booking Engine
-  const [checkIn, setCheckIn] = useState<string>("2026-06-21");
-  const [checkOut, setCheckOut] = useState<string>("2026-06-23");
+  const [checkIn, setCheckIn] = useState<string>(getTodayString());
+  const [checkOut, setCheckOut] = useState<string>(getTwoDaysLaterString());
   const [guestsCount, setGuestsCount] = useState<number>(2);
   const [selectedRoomTypeId, setSelectedRoomTypeId] = useState<string>("");
+  const [widgetError, setWidgetError] = useState<string>("");
 
   // -------- Media helpers (build-safe with empty arrays) --------
   const getRoomMediaImages = (roomTypeId: string): string[] => getRoomThumbnailImages(roomTypeId);
@@ -268,39 +286,99 @@ export default function CustomerWebsite({
 
   // Recalculate room counts available per room type for selected dates
   const handleCheckAvailability = (e?: React.FormEvent) => {
-
     if (e) e.preventDefault();
-    setIsCheckingDates(true);
+    setWidgetError("");
     setErrorMessage("");
 
-    // Simulate search delay
+    const todayStr = getTodayString();
+    if (!checkIn) {
+      setWidgetError("Please select a Check-In date.");
+      return;
+    }
+    if (checkIn < todayStr) {
+      setWidgetError("Check-In date must be today or later.");
+      return;
+    }
+    if (!checkOut) {
+      setWidgetError("Please select a Check-Out date.");
+      return;
+    }
+    if (checkOut <= checkIn) {
+      setWidgetError("Check-Out date must be after Check-In date.");
+      return;
+    }
+    if (!guestsCount || guestsCount < 1 || guestsCount > 4) {
+      setWidgetError("Please select a valid guest count.");
+      return;
+    }
+
+    setIsCheckingDates(true);
+
     setTimeout(() => {
       const results: { [key: string]: number } = {};
+      let totalAvailable = 0;
 
       roomTypes.forEach(type => {
-        // Find total rooms of this type
         const totalRoomsOfCategory = rooms.filter(r => r.roomTypeId === type.id);
-
-        // Find which rooms are booked during selected dates
         const bookedRoomIds = bookings
           .filter(b => {
             if (b.status === BookingStatus.CANCELLED) return false;
-            // Overlapping date check: CheckInA < CheckOutB AND CheckInB < CheckOutA
             return checkIn < b.checkOutDate && b.checkInDate < checkOut;
           })
           .map(b => b.roomId)
           .filter(Boolean);
 
-        // Available rooms = rooms of this type not in bookedRoomIds
         const availableRooms = totalRoomsOfCategory.filter(r => !bookedRoomIds.includes(r.id));
         results[type.id] = availableRooms.length;
+        totalAvailable += availableRooms.length;
       });
 
       setAvailabilityResults(results);
       setIsCheckingDates(false);
       setShowResults(true);
+
+      if (totalAvailable > 0) {
+        setTab("booking");
+        setSelectedBookingType("Room Booking");
+        setWizardStep(2);
+
+        const firstAvailableType = roomTypes.find(type => results[type.id] > 0);
+        if (firstAvailableType) {
+          setMultiRoomSelections([
+            {
+              id: `rm_${Date.now()}`,
+              roomTypeId: firstAvailableType.id,
+              roomId: undefined,
+              adults: Math.min(guestsCount, firstAvailableType.maxGuests),
+              children: 0,
+              rate: firstAvailableType.basePrice,
+            }
+          ]);
+        }
+      } else {
+        setWidgetError("No rooms are available for your selected dates. Please choose different dates.");
+      }
     }, 600);
   };
+
+  // Keep availabilityResults in sync with checkIn / checkOut dates dynamically
+  useEffect(() => {
+    if (!checkIn || !checkOut || checkOut <= checkIn) return;
+    const results: { [key: string]: number } = {};
+    roomTypes.forEach(type => {
+      const totalRoomsOfCategory = rooms.filter(r => r.roomTypeId === type.id);
+      const bookedRoomIds = bookings
+        .filter(b => {
+          if (b.status === BookingStatus.CANCELLED) return false;
+          return checkIn < b.checkOutDate && b.checkInDate < checkOut;
+        })
+        .map(b => b.roomId)
+        .filter(Boolean);
+      const availableRooms = totalRoomsOfCategory.filter(r => !bookedRoomIds.includes(r.id));
+      results[type.id] = availableRooms.length;
+    });
+    setAvailabilityResults(results);
+  }, [checkIn, checkOut, roomTypes, rooms, bookings]);
 
   // Trigger from "Rooms" Tab or homepage featured room
   const initiateBookingForCategory = (typeId: string) => {
@@ -627,7 +705,7 @@ export default function CustomerWebsite({
         <div id="customer-home-tab">
           
           {/* HERO SECTION */}
-          <div className="relative bg-slate-950 overflow-hidden min-h-[700px] lg:min-h-[820px] flex items-center">
+          <div className="relative bg-slate-950 overflow-hidden min-h-[640px] sm:min-h-[700px] lg:min-h-[780px] flex items-center">
             {/* Cinematic Background (MEDIA hero slider) */}
             <div className="absolute inset-0 z-0">
               {(() => {
@@ -648,27 +726,13 @@ export default function CustomerWebsite({
                 );
               })()}
 
-              {/* Grand Luxury Hotel Dark-Slate & Sand Gold Vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/30 to-transparent"></div>
+              {/* Dark overlay — reduced opacity to keep image richer and brighter but readable */}
+              <div className="absolute inset-0 bg-slate-950/30"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/50 via-transparent to-transparent"></div>
             </div>
 
-            {/* Sacred Jagannath Chakra Motif Graphic - Subtle Aesthetic Overlay */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 hidden xl:block z-10 pointer-events-none">
-              <div className="w-[600px] h-[600px] rounded-full border-12 border-amber-400 border-dashed flex items-center justify-center p-16">
-                <div className="w-full h-full rounded-full border-4 border-amber-400 flex items-center justify-center relative">
-                  <div className="absolute w-full h-[2px] bg-amber-400 rotate-0"></div>
-                  <div className="absolute w-full h-[2px] bg-amber-400 rotate-30"></div>
-                  <div className="absolute w-full h-[2px] bg-amber-400 rotate-60"></div>
-                  <div className="absolute w-full h-[2px] bg-amber-400 rotate-90"></div>
-                  <div className="absolute w-full h-[2px] bg-amber-400 rotate-120"></div>
-                  <div className="absolute w-full h-[2px] bg-amber-400 rotate-150"></div>
-                  <div className="w-32 h-32 rounded-full bg-slate-950 border-8 border-amber-400 flex items-center justify-center">
-                    <span className="text-amber-400 font-bold font-mono text-center text-xs">{hotelConfig.info.name.toUpperCase()}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-left">
               {/* Tagline Badge */}
@@ -683,12 +747,12 @@ export default function CustomerWebsite({
               </p>
               
               {/* Grand Title */}
-              <h1 className="font-serif font-normal text-5xl sm:text-6xl lg:text-7xl tracking-wide leading-tight max-w-4xl text-white">
+              <h1 className="font-serif font-semibold text-5xl sm:text-6xl lg:text-7xl tracking-[-0.02em] leading-[1.08] max-w-4xl text-white">
                 {hotelConfig.hero.title}
               </h1>
               
               {/* Subtitle */}
-              <p className="mt-6 text-lg sm:text-xl text-slate-300 max-w-2xl leading-relaxed font-light">
+              <p className="mt-6 text-lg sm:text-xl text-slate-300 max-w-2xl leading-relaxed font-light tracking-[0.08em]">
                 {hotelConfig.hero.subtitle}
               </p>
 
@@ -730,21 +794,30 @@ export default function CustomerWebsite({
           </div>
 
           {/* QUICK CHECK AVAILABILITY BAR */}
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-12 relative z-20">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/50 dark:border-slate-800 p-5 sm:p-6 backdrop-blur-md">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-16 sm:-mt-24 relative z-20">
+            <div className="bg-white/80 dark:bg-slate-900/80 rounded-3xl shadow-2xl border border-slate-200/60 dark:border-slate-800/80 p-5 sm:p-6 backdrop-blur-xl hover:shadow-amber-500/5 transition-all duration-300">
               <div className="text-center mb-4 flex items-center justify-center gap-2">
                 <Compass className="w-4 h-4 text-amber-500" />
                 <span className="font-mono text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
                   Select Check-In Dates & Plan Your Puri Pilgrimage
                 </span>
               </div>
+              {widgetError && (
+                <div className="mb-4 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl border border-red-200 dark:border-red-900/10 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{widgetError}</span>
+                </div>
+              )}
               <form onSubmit={handleCheckAvailability} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div>
                   <label className="block text-xs font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1.5">Check-In</label>
                   <input
                     type="date"
                     value={checkIn}
-                    onChange={(e) => setCheckIn(e.target.value)}
+                    onChange={(e) => {
+                      setCheckIn(e.target.value);
+                      setWidgetError("");
+                    }}
                     required
                     className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-amber-600 bg-slate-50 dark:bg-slate-950 font-medium"
                   />
@@ -754,7 +827,10 @@ export default function CustomerWebsite({
                   <input
                     type="date"
                     value={checkOut}
-                    onChange={(e) => setCheckOut(e.target.value)}
+                    onChange={(e) => {
+                      setCheckOut(e.target.value);
+                      setWidgetError("");
+                    }}
                     required
                     className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-amber-600 bg-slate-50 dark:bg-slate-950 font-medium"
                   />
@@ -776,7 +852,7 @@ export default function CustomerWebsite({
                   type="submit"
                   className="w-full py-2.5 bg-amber-500 hover:bg-amber-650 text-slate-950 font-bold rounded-lg text-sm transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <Waves className="w-4 h-4 text-slate-950" /> Verify Live Rates
+                  <Waves className="w-4 h-4 text-slate-950" /> Check Availability
                 </button>
               </form>
             </div>
@@ -815,13 +891,25 @@ export default function CustomerWebsite({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {roomTypes.map((room) => (
                   <div key={room.id} className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200/55 dark:border-slate-800 shadow-sm flex flex-col h-full hover:shadow-md transition-shadow">
-                    <div className="h-52 relative overflow-hidden">
-                      <img 
-                        src={getFirst(getRoomMediaImages(room.id)) ?? room.imageUrl}
-                        alt={room.name} 
-                        className="w-full h-full object-cover hover:scale-105 transition-transform" 
-                        referrerPolicy="no-referrer"
-                      />
+                    <div className="h-52 relative overflow-hidden bg-slate-100 dark:bg-slate-800">
+                      {getFirst(getRoomMediaImages(room.id)) || room.imageUrl ? (
+                        <img
+                          src={getFirst(getRoomMediaImages(room.id)) ?? room.imageUrl}
+                          alt={room.name}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            const t = e.currentTarget;
+                            t.style.display = 'none';
+                            const ph = t.nextElementSibling as HTMLElement | null;
+                            if (ph) ph.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="absolute inset-0 items-center justify-center flex-col gap-2 text-slate-400 dark:text-slate-500" style={{display: 'none'}}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span className="text-xs font-mono">{room.name}</span>
+                      </div>
                       <div className="absolute top-3 right-3 bg-slate-950/75 backdrop-blur-md px-2.5 py-1 text-[11px] font-mono rounded-lg border border-amber-450/40 font-bold text-amber-400">
                         ₹{room.basePrice}/Night
                       </div>
@@ -1325,8 +1413,23 @@ export default function CustomerWebsite({
                   idx % 2 === 1 ? "md:flex-row-reverse" : ""
                 }`}
               >
-                <div className="w-full md:w-5/12 h-64 md:h-96 relative">
-                  <img src={getFirst(getRoomMediaImages(room.id)) ?? room.imageUrl} alt={room.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <div className="w-full md:w-5/12 h-64 md:h-96 relative bg-slate-100 dark:bg-slate-800">
+                  <img
+                    src={getFirst(getRoomMediaImages(room.id)) ?? room.imageUrl}
+                    alt={room.name}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const t = e.currentTarget;
+                      t.style.display = 'none';
+                      const ph = t.nextElementSibling as HTMLElement | null;
+                      if (ph) ph.style.display = 'flex';
+                    }}
+                  />
+                  <div className="absolute inset-0 items-center justify-center flex-col gap-2 text-slate-400 dark:text-slate-500" style={{display: 'none'}}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <span className="text-sm font-mono">{room.name}</span>
+                  </div>
                   {/* Total count of rooms badge */}
                   <span className="absolute top-4 left-4 bg-slate-950/90 border border-amber-400/20 text-white px-2.5 py-1 rounded-md text-xs font-mono font-bold uppercase tracking-wider">
                     Tier Inventory: {rooms.filter(cr => cr.roomTypeId === room.id).length} rooms
@@ -1583,7 +1686,11 @@ export default function CustomerWebsite({
                             selection={selection}
 
                             roomType={rt}
-                            roomTypes={roomTypes}
+                            roomTypes={
+                              Object.keys(availabilityResults).length > 0
+                                ? roomTypes.filter(rt => availabilityResults[rt.id] > 0 || rt.id === selection.roomTypeId)
+                                : roomTypes
+                            }
                             cardIndex={idx}
                             disableRemove={multiRoomSelections.length <= 1}
                             onChangeAdults={(adults) => {

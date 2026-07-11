@@ -95,6 +95,7 @@ export const MEDIA = {
     { id: "hero-02", src: "/assets/hotel/hero/hero-02.jpg", alt: "Hotel hero 02", sort: 2 },
     { id: "hero-03", src: "/assets/hotel/hero/hero-03.jpg", alt: "Hotel hero 03", sort: 3 },
     { id: "hero-04", src: "/assets/hotel/hero/hero-04.jpg", alt: "Hotel hero 04", sort: 4 },
+    { id: "hero-05", src: "/assets/hotel/hero/hero-05.jpg", alt: "Hotel hero 05", sort: 5 },
   ],
 
   // Room categories (multiple images per category). Keys align to UI categories.
@@ -112,7 +113,13 @@ export const MEDIA = {
   } satisfies RoomMedia,
 
   galleryImages: [
-    // gallery/ currently contains only README.md, so keep gallery empty
+    { id: "gallery-01", src: "/assets/hotel/gallery/hero-02.jpg", alt: "Resort Exterior", sort: 1 },
+    { id: "gallery-02", src: "/assets/hotel/gallery/hero-05.jpg", alt: "Garden View", sort: 2 },
+    { id: "gallery-03", src: "/assets/hotel/gallery/pexels-quang-nguyen-vinh-222549-6875499.jpg", alt: "Resort Lobby", sort: 3 },
+    { id: "gallery-04", src: "/assets/hotel/gallery/pexels-sokil-2159771144-38406370.jpg", alt: "Beachfront Balcony", sort: 4 },
+    { id: "gallery-05", src: "/assets/hotel/gallery/restaurant-01.jpg", alt: "Dining Room", sort: 5 },
+    { id: "gallery-06", src: "/assets/hotel/gallery/restaurant-02.jpg", alt: "Beachfront Lounge", sort: 6 },
+    { id: "gallery-07", src: "/assets/hotel/gallery/room-03.jpg", alt: "Family Suite Bed", sort: 7 },
   ],
 
   // Dining
