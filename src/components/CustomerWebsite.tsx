@@ -12,13 +12,41 @@ import { calcNights as calcNightsFn } from "../utils/booking";
 
 
 
-import { 
-  Coffee, Wifi, Tv, Thermometer, ShieldCheck, Phone, Mail, MapPin, 
-  Sparkles, Check, ChevronRight, ChevronDown, AlertCircle, CreditCard, 
-  Compass, Waves, Sun, Anchor, Heart, Utensils, BookOpen, Users, HelpCircle,
-  Calendar, Building, Briefcase, Car, Clock, ExternalLink
+import {
+  Coffee,
+  Wifi,
+  Tv,
+  Thermometer,
+  ShieldCheck,
+  Phone,
+  Mail,
+  MapPin,
+  Sparkles,
+  Check,
+  ChevronRight,
+  ChevronDown,
+  AlertCircle,
+  CreditCard,
+  Compass,
+  Waves,
+  Sun,
+  Anchor,
+  Heart,
+  Utensils,
+  BookOpen,
+  Users,
+  HelpCircle,
+  Calendar,
+  Building,
+  Briefcase,
+  Car,
+  Clock,
+  ExternalLink
 } from "lucide-react";
 import { hotelConfig } from "../config/hotelConfig";
+import { MEDIA } from "../config/hotel/media";
+
+
 
 // Dynamic Icon Mapping
 const ICON_MAP: { [key: string]: React.ComponentType<any> } = {
@@ -74,6 +102,22 @@ export default function CustomerWebsite({
   const [checkOut, setCheckOut] = useState<string>("2026-06-23");
   const [guestsCount, setGuestsCount] = useState<number>(2);
   const [selectedRoomTypeId, setSelectedRoomTypeId] = useState<string>("");
+
+  // -------- Media helpers (build-safe with empty arrays) --------
+  const getRoomMediaImages = (roomTypeId: string): string[] => {
+    // Map roomType ids -> MEDIA.roomImages keys
+    const map: Record<string, keyof typeof MEDIA.roomImages> = {
+      deluxe: "deluxe",
+      premium_sea_view: "premium",
+      executive_suite: "executive",
+      family_room: "familySuite",
+      presidential_suite: "presidentialSuite",
+    };
+    const key = map[roomTypeId];
+    if (!key) return [];
+    return MEDIA.roomImages[key] ?? [];
+  };
+
 
   // Multi-room booking UI state (front-end only, payload structure unchanged)
   const [multiRoomSelections, setMultiRoomSelections] = useState<MultiRoomSelection[]>([
@@ -550,15 +594,16 @@ export default function CustomerWebsite({
     time: "Resort Tours Available",
     description: att.description,
     tips: hotelConfig.policies.additionalRules.join(" ") || "Please consult our help desk.",
-    image: att.images[0] || "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80"
+    image: att.images?.[0] || ""
   }));
 
   const LOCAL_EXPERIENCES = hotelConfig.activities.map((act) => ({
     title: act.name,
     badge: "Special Activity",
     description: act.description,
-    image: act.images[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
+    image: act.images?.[0] || ""
   }));
+
 
   const TRAVEL_TIPS = hotelConfig.faqs.map((f) => ({
     title: f.question,
@@ -652,6 +697,7 @@ export default function CustomerWebsite({
                 >
                   Book Your Stay
                 </button>
+
                 <button
                   onClick={() => setTab("rooms")}
                   className="px-8 py-4 bg-transparent border-2 border-slate-300 hover:border-amber-400 text-white hover:text-amber-400 font-semibold text-sm tracking-widest uppercase rounded-lg transition-all duration-300 cursor-pointer"
