@@ -1,65 +1,841 @@
 {
   "rooms": [
-    { "id": "101", "roomTypeId": "deluxe", "status": "Available" },
-    { "id": "102", "roomTypeId": "deluxe", "status": "Available" },
-    { "id": "103", "roomTypeId": "deluxe", "status": "Available" },
-    { "id": "104", "roomTypeId": "deluxe", "status": "Available" },
-    { "id": "105", "roomTypeId": "deluxe", "status": "Occupied" },
-    { "id": "106", "roomTypeId": "deluxe", "status": "Cleaning" },
-    { "id": "107", "roomTypeId": "deluxe", "status": "Available" },
-    { "id": "108", "roomTypeId": "deluxe", "status": "Maintenance" },
-    { "id": "109", "roomTypeId": "deluxe", "status": "Maintenance" },
-    { "id": "110", "roomTypeId": "deluxe", "status": "Available" },
-    { "id": "201", "roomTypeId": "premium_sea_view", "status": "Cleaning" },
-    { "id": "202", "roomTypeId": "premium_sea_view", "status": "Available" },
-    { "id": "203", "roomTypeId": "premium_sea_view", "status": "Available" },
-    { "id": "204", "roomTypeId": "premium_sea_view", "status": "Occupied" },
-    { "id": "205", "roomTypeId": "premium_sea_view", "status": "Cleaning" },
-    { "id": "206", "roomTypeId": "premium_sea_view", "status": "Available" },
-    { "id": "207", "roomTypeId": "premium_sea_view", "status": "Maintenance" },
-    { "id": "208", "roomTypeId": "premium_sea_view", "status": "Maintenance" },
-    { "id": "209", "roomTypeId": "premium_sea_view", "status": "Available" },
-    { "id": "210", "roomTypeId": "premium_sea_view", "status": "Available" },
-    { "id": "301", "roomTypeId": "executive_suite", "status": "Available" },
-    { "id": "302", "roomTypeId": "executive_suite", "status": "Available" },
-    { "id": "303", "roomTypeId": "executive_suite", "status": "Occupied" },
-    { "id": "304", "roomTypeId": "executive_suite", "status": "Cleaning" },
-    { "id": "305", "roomTypeId": "executive_suite", "status": "Available" },
-    { "id": "306", "roomTypeId": "executive_suite", "status": "Maintenance" },
-    { "id": "307", "roomTypeId": "executive_suite", "status": "Maintenance" },
-    { "id": "308", "roomTypeId": "executive_suite", "status": "Available" },
-    { "id": "309", "roomTypeId": "executive_suite", "status": "Available" },
-    { "id": "310", "roomTypeId": "executive_suite", "status": "Available" },
-    { "id": "401", "roomTypeId": "family_room", "status": "Available" },
-    { "id": "402", "roomTypeId": "family_room", "status": "Occupied" },
-    { "id": "403", "roomTypeId": "family_room", "status": "Cleaning" },
-    { "id": "404", "roomTypeId": "family_room", "status": "Available" },
-    { "id": "405", "roomTypeId": "family_room", "status": "Maintenance" },
-    { "id": "406", "roomTypeId": "family_room", "status": "Maintenance" },
-    { "id": "407", "roomTypeId": "family_room", "status": "Available" },
-    { "id": "408", "roomTypeId": "family_room", "status": "Available" },
-    { "id": "409", "roomTypeId": "family_room", "status": "Available" },
-    { "id": "410", "roomTypeId": "family_room", "status": "Available" },
-    { "id": "501", "roomTypeId": "presidential_suite", "status": "Occupied" },
-    { "id": "502", "roomTypeId": "presidential_suite", "status": "Cleaning" },
-    { "id": "503", "roomTypeId": "presidential_suite", "status": "Available" },
-    { "id": "504", "roomTypeId": "presidential_suite", "status": "Maintenance" },
-    { "id": "505", "roomTypeId": "presidential_suite", "status": "Maintenance" },
-    { "id": "506", "roomTypeId": "presidential_suite", "status": "Available" },
-    { "id": "507", "roomTypeId": "presidential_suite", "status": "Available" },
-    { "id": "508", "roomTypeId": "presidential_suite", "status": "Available" },
-    { "id": "509", "roomTypeId": "presidential_suite", "status": "Available" },
-    { "id": "510", "roomTypeId": "presidential_suite", "status": "Occupied" }
+    {
+      "id": "101",
+      "roomTypeId": "deluxe",
+      "status": "Available"
+    },
+    {
+      "id": "102",
+      "roomTypeId": "deluxe",
+      "status": "Available"
+    },
+    {
+      "id": "103",
+      "roomTypeId": "deluxe",
+      "status": "Available"
+    },
+    {
+      "id": "104",
+      "roomTypeId": "deluxe",
+      "status": "Available"
+    },
+    {
+      "id": "105",
+      "roomTypeId": "deluxe",
+      "status": "Occupied"
+    },
+    {
+      "id": "106",
+      "roomTypeId": "deluxe",
+      "status": "Cleaning"
+    },
+    {
+      "id": "107",
+      "roomTypeId": "deluxe",
+      "status": "Available"
+    },
+    {
+      "id": "108",
+      "roomTypeId": "deluxe",
+      "status": "Maintenance"
+    },
+    {
+      "id": "109",
+      "roomTypeId": "deluxe",
+      "status": "Maintenance"
+    },
+    {
+      "id": "110",
+      "roomTypeId": "deluxe",
+      "status": "Available"
+    },
+    {
+      "id": "201",
+      "roomTypeId": "premium_sea_view",
+      "status": "Cleaning"
+    },
+    {
+      "id": "202",
+      "roomTypeId": "premium_sea_view",
+      "status": "Available"
+    },
+    {
+      "id": "203",
+      "roomTypeId": "premium_sea_view",
+      "status": "Available"
+    },
+    {
+      "id": "204",
+      "roomTypeId": "premium_sea_view",
+      "status": "Occupied"
+    },
+    {
+      "id": "205",
+      "roomTypeId": "premium_sea_view",
+      "status": "Cleaning"
+    },
+    {
+      "id": "206",
+      "roomTypeId": "premium_sea_view",
+      "status": "Available"
+    },
+    {
+      "id": "207",
+      "roomTypeId": "premium_sea_view",
+      "status": "Maintenance"
+    },
+    {
+      "id": "208",
+      "roomTypeId": "premium_sea_view",
+      "status": "Maintenance"
+    },
+    {
+      "id": "209",
+      "roomTypeId": "premium_sea_view",
+      "status": "Available"
+    },
+    {
+      "id": "210",
+      "roomTypeId": "premium_sea_view",
+      "status": "Available"
+    },
+    {
+      "id": "301",
+      "roomTypeId": "executive_suite",
+      "status": "Available"
+    },
+    {
+      "id": "302",
+      "roomTypeId": "executive_suite",
+      "status": "Available"
+    },
+    {
+      "id": "303",
+      "roomTypeId": "executive_suite",
+      "status": "Occupied"
+    },
+    {
+      "id": "304",
+      "roomTypeId": "executive_suite",
+      "status": "Cleaning"
+    },
+    {
+      "id": "305",
+      "roomTypeId": "executive_suite",
+      "status": "Available"
+    },
+    {
+      "id": "306",
+      "roomTypeId": "executive_suite",
+      "status": "Maintenance"
+    },
+    {
+      "id": "307",
+      "roomTypeId": "executive_suite",
+      "status": "Maintenance"
+    },
+    {
+      "id": "308",
+      "roomTypeId": "executive_suite",
+      "status": "Available"
+    },
+    {
+      "id": "309",
+      "roomTypeId": "executive_suite",
+      "status": "Available"
+    },
+    {
+      "id": "310",
+      "roomTypeId": "executive_suite",
+      "status": "Available"
+    },
+    {
+      "id": "401",
+      "roomTypeId": "family_room",
+      "status": "Available"
+    },
+    {
+      "id": "402",
+      "roomTypeId": "family_room",
+      "status": "Occupied"
+    },
+    {
+      "id": "403",
+      "roomTypeId": "family_room",
+      "status": "Cleaning"
+    },
+    {
+      "id": "404",
+      "roomTypeId": "family_room",
+      "status": "Available"
+    },
+    {
+      "id": "405",
+      "roomTypeId": "family_room",
+      "status": "Maintenance"
+    },
+    {
+      "id": "406",
+      "roomTypeId": "family_room",
+      "status": "Maintenance"
+    },
+    {
+      "id": "407",
+      "roomTypeId": "family_room",
+      "status": "Available"
+    },
+    {
+      "id": "408",
+      "roomTypeId": "family_room",
+      "status": "Available"
+    },
+    {
+      "id": "409",
+      "roomTypeId": "family_room",
+      "status": "Available"
+    },
+    {
+      "id": "410",
+      "roomTypeId": "family_room",
+      "status": "Available"
+    },
+    {
+      "id": "501",
+      "roomTypeId": "presidential_suite",
+      "status": "Occupied"
+    },
+    {
+      "id": "502",
+      "roomTypeId": "presidential_suite",
+      "status": "Cleaning"
+    },
+    {
+      "id": "503",
+      "roomTypeId": "presidential_suite",
+      "status": "Available"
+    },
+    {
+      "id": "504",
+      "roomTypeId": "presidential_suite",
+      "status": "Maintenance"
+    },
+    {
+      "id": "505",
+      "roomTypeId": "presidential_suite",
+      "status": "Maintenance"
+    },
+    {
+      "id": "506",
+      "roomTypeId": "presidential_suite",
+      "status": "Available"
+    },
+    {
+      "id": "507",
+      "roomTypeId": "presidential_suite",
+      "status": "Available"
+    },
+    {
+      "id": "508",
+      "roomTypeId": "presidential_suite",
+      "status": "Available"
+    },
+    {
+      "id": "509",
+      "roomTypeId": "presidential_suite",
+      "status": "Available"
+    },
+    {
+      "id": "510",
+      "roomTypeId": "presidential_suite",
+      "status": "Occupied"
+    }
   ],
-  "guests": [],
-  "bookings": [],
-  "payments": [],
-  "notifications": [],
+  "guests": [
+    {
+      "id": "GUST-5456",
+      "name": "Bijay mohanty",
+      "email": "sangharsmohanty59@gmail.com",
+      "phone": "9078938019",
+      "createdAt": "2026-07-12T10:31:25.456Z"
+    },
+    {
+      "id": "GUST-9241",
+      "name": "sanghars",
+      "email": "sanghars@gmail.com",
+      "phone": "9078938019",
+      "createdAt": "2026-07-12T15:27:49.241Z"
+    },
+    {
+      "id": "GUST-6960",
+      "name": "fsdgfsdf",
+      "email": "asfsdarfsc@gmail.com",
+      "phone": "9078938019",
+      "createdAt": "2026-07-12T15:28:26.960Z"
+    },
+    {
+      "id": "GUST-0236",
+      "name": "dfdf",
+      "email": "fdgbfdg@gmail.com",
+      "phone": "9096788847",
+      "createdAt": "2026-07-12T15:42:20.236Z"
+    },
+    {
+      "id": "GUST-8598",
+      "name": "sadadsd",
+      "email": "asdasdasd",
+      "phone": "90785345535",
+      "createdAt": "2026-07-12T17:54:48.598Z"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "BK-5456",
+      "guestId": "GUST-5456",
+      "roomId": null,
+      "roomTypeId": "executive_suite",
+      "checkInDate": "2026-07-13",
+      "checkOutDate": "2026-07-15",
+      "numberOfGuests": 2,
+      "totalPrice": 10080,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-07-12T10:31:25.456Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 10080,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-07-12T10:31:25.457Z",
+          "action": "Booking Created",
+          "user": "Bijay mohanty",
+          "notes": "Created via channel: Website - Category: executive_suite (Pay Full Selected)"
+        }
+      ],
+      "bookingRooms": [
+        {
+          "roomTypeId": "executive_suite",
+          "roomId": null,
+          "adults": 2,
+          "children": 0,
+          "rate": 9800
+        },
+        {
+          "roomTypeId": "family_room",
+          "roomId": null,
+          "adults": 2,
+          "children": 0,
+          "rate": 7500
+        }
+      ]
+    },
+    {
+      "id": "BK-9242",
+      "guestId": "GUST-9241",
+      "roomId": null,
+      "roomTypeId": "deluxe",
+      "checkInDate": "2026-07-13",
+      "checkOutDate": "2026-07-15",
+      "numberOfGuests": 2,
+      "totalPrice": 10080,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-07-12T15:27:49.242Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 10080,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-07-12T15:27:49.242Z",
+          "action": "Booking Created",
+          "user": "sanghars",
+          "notes": "Created via channel: Website - Category: deluxe (Pay Full Selected)"
+        }
+      ],
+      "bookingRooms": [
+        {
+          "roomTypeId": "deluxe",
+          "roomId": null,
+          "adults": 2,
+          "children": 0,
+          "rate": 4500
+        }
+      ]
+    },
+    {
+      "id": "BK-6960",
+      "guestId": "GUST-6960",
+      "roomId": null,
+      "roomTypeId": "deluxe",
+      "checkInDate": "2026-07-13",
+      "checkOutDate": "2026-07-15",
+      "numberOfGuests": 2,
+      "totalPrice": 10080,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-07-12T15:28:26.960Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 10080,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-07-12T15:28:26.960Z",
+          "action": "Booking Created",
+          "user": "fsdgfsdf",
+          "notes": "Created via channel: Website - Category: deluxe (Pay Full Selected)"
+        }
+      ],
+      "bookingRooms": [
+        {
+          "roomTypeId": "deluxe",
+          "roomId": null,
+          "adults": 2,
+          "children": 0,
+          "rate": 4500
+        }
+      ]
+    },
+    {
+      "id": "BK-0236",
+      "guestId": "GUST-0236",
+      "roomId": null,
+      "roomTypeId": "presidential_suite",
+      "checkInDate": "2026-07-13",
+      "checkOutDate": "2026-07-15",
+      "numberOfGuests": 1,
+      "totalPrice": 10080,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-07-12T15:42:20.236Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 10080,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-07-12T15:42:20.236Z",
+          "action": "Booking Created",
+          "user": "dfdf",
+          "notes": "Created via channel: Website - Category: presidential_suite (Pay Full Selected)"
+        }
+      ],
+      "bookingRooms": [
+        {
+          "roomTypeId": "presidential_suite",
+          "roomId": null,
+          "adults": 1,
+          "children": 0,
+          "rate": 18000
+        }
+      ]
+    },
+    {
+      "id": "BK-8598",
+      "guestId": "GUST-8598",
+      "roomId": null,
+      "roomTypeId": "deluxe",
+      "checkInDate": "2026-07-13",
+      "checkOutDate": "2026-07-15",
+      "numberOfGuests": 2,
+      "totalPrice": 10080,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-07-12T17:54:48.598Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Full",
+      "advancePaid": 10080,
+      "pendingBalance": 0,
+      "auditLogs": [
+        {
+          "timestamp": "2026-07-12T17:54:48.598Z",
+          "action": "Booking Created",
+          "user": "sadadsd",
+          "notes": "Created via channel: Website - Category: deluxe (Pay Full Selected)"
+        }
+      ],
+      "bookingRooms": [
+        {
+          "roomTypeId": "deluxe",
+          "roomId": null,
+          "adults": 2,
+          "children": 0,
+          "rate": 4500
+        }
+      ]
+    }
+  ],
+  "payments": [
+    {
+      "id": "PAY-5473",
+      "bookingId": "BK-5456",
+      "amount": 10080,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_285044",
+      "createdAt": "2026-07-12T10:31:25.473Z"
+    },
+    {
+      "id": "PAY-9249",
+      "bookingId": "BK-9242",
+      "amount": 10080,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_068786",
+      "createdAt": "2026-07-12T15:27:49.249Z"
+    },
+    {
+      "id": "PAY-6960",
+      "bookingId": "BK-6960",
+      "amount": 10080,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_106955",
+      "createdAt": "2026-07-12T15:28:26.960Z"
+    },
+    {
+      "id": "PAY-0236",
+      "bookingId": "BK-0236",
+      "amount": 10080,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_940232",
+      "createdAt": "2026-07-12T15:42:20.236Z"
+    },
+    {
+      "id": "PAY-8618",
+      "bookingId": "BK-8598",
+      "amount": 10080,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_888240",
+      "createdAt": "2026-07-12T17:54:48.618Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "NT-1783878888618-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "sadadsd booked a room for 2026-07-13 to 2026-07-15.",
+      "isRead": false,
+      "createdAt": "2026-07-12T17:54:48.618Z"
+    },
+    {
+      "id": "NT-1783878888618-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹10,080 received for booking BK-8598.",
+      "isRead": false,
+      "createdAt": "2026-07-12T17:54:48.618Z"
+    },
+    {
+      "id": "NT-1783870940236-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "dfdf booked a room for 2026-07-13 to 2026-07-15.",
+      "isRead": false,
+      "createdAt": "2026-07-12T15:42:20.236Z"
+    },
+    {
+      "id": "NT-1783870940236-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹10,080 received for booking BK-0236.",
+      "isRead": false,
+      "createdAt": "2026-07-12T15:42:20.236Z"
+    },
+    {
+      "id": "NT-1783870106961-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "fsdgfsdf booked a room for 2026-07-13 to 2026-07-15.",
+      "isRead": false,
+      "createdAt": "2026-07-12T15:28:26.961Z"
+    },
+    {
+      "id": "NT-1783870106960-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹10,080 received for booking BK-6960.",
+      "isRead": false,
+      "createdAt": "2026-07-12T15:28:26.961Z"
+    },
+    {
+      "id": "NT-1783870069249-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "sanghars booked a room for 2026-07-13 to 2026-07-15.",
+      "isRead": false,
+      "createdAt": "2026-07-12T15:27:49.249Z"
+    },
+    {
+      "id": "NT-1783870069249-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹10,080 received for booking BK-9242.",
+      "isRead": false,
+      "createdAt": "2026-07-12T15:27:49.249Z"
+    },
+    {
+      "id": "NT-1783852285474-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "Bijay mohanty booked a room for 2026-07-13 to 2026-07-15.",
+      "isRead": false,
+      "createdAt": "2026-07-12T10:31:25.474Z"
+    },
+    {
+      "id": "NT-1783852285473-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹10,080 received for booking BK-5456.",
+      "isRead": false,
+      "createdAt": "2026-07-12T10:31:25.473Z"
+    }
+  ],
   "documents": [],
-  "messageLogs": [],
-  "activityLogs": [],
+  "messageLogs": [
+    {
+      "id": "MSG-8747-E",
+      "bookingId": "BK-8598",
+      "guestName": "sadadsd",
+      "recipient": "asdasdasd",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Serene Bay Resort & Spa (BK-8598)",
+      "body": "Dear sadadsd,\n\nYour reservation at Serene Bay Resort & Spa has been successfully guaranteed.\n\n\nBooking Summary Details:\n- Booking Reference: BK-8598\n- Reserved Category: Deluxe Room\n- Schedule Period: 2026-07-13 to 2026-07-15\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹10,080 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://hospitality-pms-production.up.railway.app/guest?bookingId=BK-8598\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Failed",
+      "sentAt": "2026-07-12T17:54:48.747Z"
+    },
+    {
+      "id": "MSG-88629-WA",
+      "bookingId": "BK-8598",
+      "guestName": "sadadsd",
+      "recipient": "+90785345535",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp Booking Confirmation (Simulated)",
+      "body": "\n┌────────────────────────────────────────────────────┐\n│  📲  WhatsApp Booking Confirmation [SIMULATED]     │\n└────────────────────────────────────────────────────┘\n  Hotel       : Serene Bay Resort & Spa\n  Guest       : sadadsd\n  Booking ID  : BK-8598\n  Room Type   : Deluxe Room\n  Check-In    : 2026-07-13\n  Check-Out   : 2026-07-15\n  Guests      : 2\n  Payment     : Paid\n  Phone       : +91-6752-223344\n  Address     : Plot 14, Marina Beach Road, Sector 9, Puri, Odisha 752002\n  Maps        : https://maps.google.com/?q=19.8135,85.8312\n└────────────────────────────────────────────────────┘\n",
+      "status": "Simulated",
+      "sentAt": "2026-07-12T17:54:48.629Z"
+    },
+    {
+      "id": "MSG-0333-E",
+      "bookingId": "BK-0236",
+      "guestName": "dfdf",
+      "recipient": "fdgbfdg@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Serene Bay Resort & Spa (BK-0236)",
+      "body": "Dear dfdf,\n\nYour reservation at Serene Bay Resort & Spa has been successfully guaranteed.\n\n\nBooking Summary Details:\n- Booking Reference: BK-0236\n- Reserved Category: Presidential Suite\n- Schedule Period: 2026-07-13 to 2026-07-15\n- Guests Count: 1 Persons\n- Total Paid Subtotal: ₹10,080 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://hospitality-pms-production.up.railway.app/guest?bookingId=BK-0236\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/alOyd6tu2Pi7Y95DalO14fsdSb1TcTJUAAAAA6aa.jrAea4vuGeMtHYOcsk",
+      "sentAt": "2026-07-12T15:42:20.333Z"
+    },
+    {
+      "id": "MSG-40246-WA",
+      "bookingId": "BK-0236",
+      "guestName": "dfdf",
+      "recipient": "+919096788847",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp Booking Confirmation (Simulated)",
+      "body": "\n┌────────────────────────────────────────────────────┐\n│  📲  WhatsApp Booking Confirmation [SIMULATED]     │\n└────────────────────────────────────────────────────┘\n  Hotel       : Serene Bay Resort & Spa\n  Guest       : dfdf\n  Booking ID  : BK-0236\n  Room Type   : Presidential Suite\n  Check-In    : 2026-07-13\n  Check-Out   : 2026-07-15\n  Guests      : 1\n  Payment     : Paid\n  Phone       : +91-6752-223344\n  Address     : Plot 14, Marina Beach Road, Sector 9, Puri, Odisha 752002\n  Maps        : https://maps.google.com/?q=19.8135,85.8312\n└────────────────────────────────────────────────────┘\n",
+      "status": "Simulated",
+      "sentAt": "2026-07-12T15:42:20.246Z"
+    },
+    {
+      "id": "MSG-7076-E",
+      "bookingId": "BK-6960",
+      "guestName": "fsdgfsdf",
+      "recipient": "asfsdarfsc@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Serene Bay Resort & Spa (BK-6960)",
+      "body": "Dear fsdgfsdf,\n\nYour reservation at Serene Bay Resort & Spa has been successfully guaranteed.\n\n\nBooking Summary Details:\n- Booking Reference: BK-6960\n- Reserved Category: Deluxe Room\n- Schedule Period: 2026-07-13 to 2026-07-15\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹10,080 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://hospitality-pms-production.up.railway.app/guest?bookingId=BK-6960\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/alOyd6tu2Pi7Y95DalOyn0aRd.PIv68zAAAAAmTTHhsBV.f-9FAGeVQGCwc",
+      "sentAt": "2026-07-12T15:28:27.076Z"
+    },
+    {
+      "id": "MSG-06967-WA",
+      "bookingId": "BK-6960",
+      "guestName": "fsdgfsdf",
+      "recipient": "+919078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp Booking Confirmation (Simulated)",
+      "body": "\n┌────────────────────────────────────────────────────┐\n│  📲  WhatsApp Booking Confirmation [SIMULATED]     │\n└────────────────────────────────────────────────────┘\n  Hotel       : Serene Bay Resort & Spa\n  Guest       : fsdgfsdf\n  Booking ID  : BK-6960\n  Room Type   : Deluxe Room\n  Check-In    : 2026-07-13\n  Check-Out   : 2026-07-15\n  Guests      : 2\n  Payment     : Paid\n  Phone       : +91-6752-223344\n  Address     : Plot 14, Marina Beach Road, Sector 9, Puri, Odisha 752002\n  Maps        : https://maps.google.com/?q=19.8135,85.8312\n└────────────────────────────────────────────────────┘\n",
+      "status": "Simulated",
+      "sentAt": "2026-07-12T15:28:26.967Z"
+    },
+    {
+      "id": "MSG-9445-E",
+      "bookingId": "BK-9242",
+      "guestName": "sanghars",
+      "recipient": "sanghars@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Serene Bay Resort & Spa (BK-9242)",
+      "body": "Dear sanghars,\n\nYour reservation at Serene Bay Resort & Spa has been successfully guaranteed.\n\n\nBooking Summary Details:\n- Booking Reference: BK-9242\n- Reserved Category: Deluxe Room\n- Schedule Period: 2026-07-13 to 2026-07-15\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹10,080 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://hospitality-pms-production.up.railway.app/guest?bookingId=BK-9242\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/alOyd6tu2Pi7Y95DalOyfeh.E5oJ5fVqAAAAAXHnUkehYAeZXyx1PG5PDjk",
+      "sentAt": "2026-07-12T15:27:49.445Z"
+    },
+    {
+      "id": "MSG-69268-WA",
+      "bookingId": "BK-9242",
+      "guestName": "sanghars",
+      "recipient": "+919078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp Booking Confirmation (Simulated)",
+      "body": "\n┌────────────────────────────────────────────────────┐\n│  📲  WhatsApp Booking Confirmation [SIMULATED]     │\n└────────────────────────────────────────────────────┘\n  Hotel       : Serene Bay Resort & Spa\n  Guest       : sanghars\n  Booking ID  : BK-9242\n  Room Type   : Deluxe Room\n  Check-In    : 2026-07-13\n  Check-Out   : 2026-07-15\n  Guests      : 2\n  Payment     : Paid\n  Phone       : +91-6752-223344\n  Address     : Plot 14, Marina Beach Road, Sector 9, Puri, Odisha 752002\n  Maps        : https://maps.google.com/?q=19.8135,85.8312\n└────────────────────────────────────────────────────┘\n",
+      "status": "Simulated",
+      "sentAt": "2026-07-12T15:27:49.268Z"
+    },
+    {
+      "id": "MSG-2124-W",
+      "bookingId": "BK-5456",
+      "guestName": "Bijay mohanty",
+      "recipient": "9078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp: booking confirmation",
+      "body": "⭐ *Reservation Confirmed!* ⭐\nDear *Bijay mohanty*, your booking reference *BK-5456* at *Grand Crest Hotel Kolkata* is confirmed.\n\n🛏️ *Suite:* Executive Suite\n🗓️ *Dates:* 2026-07-13 to 2026-07-15\n👥 *Guests:* 2 Person(s)\n💰 *Total Paid:* ₹10,080\n\n⚡ *Express Check-In:* Avoid lobby delays! Please upload your ID proofs online before arrival:\n👉 https://hospitality-pms-production.up.railway.app/guest?bookingId=BK-5456\n\nWe look forward to welcoming you!",
+      "status": "Simulated",
+      "sentAt": "2026-07-12T10:31:32.124Z"
+    },
+    {
+      "id": "MSG-5476-E",
+      "bookingId": "BK-5456",
+      "guestName": "Bijay mohanty",
+      "recipient": "sangharsmohanty59@gmail.com",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Serene Bay Resort & Spa (BK-5456)",
+      "body": "Dear Bijay mohanty,\n\nYour reservation at Serene Bay Resort & Spa has been successfully guaranteed.\n\n\nBooking Summary Details:\n- Booking Reference: BK-5456\n- Reserved Category: Executive Suite\n- Schedule Period: 2026-07-13 to 2026-07-15\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹10,080 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://hospitality-pms-production.up.railway.app/guest?bookingId=BK-5456\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Simulated",
+      "etherealUrl": "https://ethereal.email/message/alNs.qtu2Pi7WKpTalNtA-h.E5oJ5D5eAAAAAWEUpz5.G94XKW4Oaikirgc",
+      "sentAt": "2026-07-12T10:31:25.476Z"
+    }
+  ],
+  "activityLogs": [
+    {
+      "id": "ACT-1783878888618-nwjm64m2",
+      "timestamp": "2026-07-12T17:54:48.618Z",
+      "action": "Reservation Creation",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "New reservation BK-8598 created for guest sadadsd (Room Booking). Total: ₹10,080",
+      "icon": "create"
+    },
+    {
+      "id": "ACT-1783870940236-x0c7gcfw",
+      "timestamp": "2026-07-12T15:42:20.236Z",
+      "action": "Reservation Creation",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "New reservation BK-0236 created for guest dfdf (Room Booking). Total: ₹10,080",
+      "icon": "create"
+    },
+    {
+      "id": "ACT-1783870106960-z0r00ego",
+      "timestamp": "2026-07-12T15:28:26.960Z",
+      "action": "Reservation Creation",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "New reservation BK-6960 created for guest fsdgfsdf (Room Booking). Total: ₹10,080",
+      "icon": "create"
+    },
+    {
+      "id": "ACT-1783870069249-1jw80pgt",
+      "timestamp": "2026-07-12T15:27:49.249Z",
+      "action": "Reservation Creation",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "New reservation BK-9242 created for guest sanghars (Room Booking). Total: ₹10,080",
+      "icon": "create"
+    },
+    {
+      "id": "ACT-1783852285473-ecbv6kn8",
+      "timestamp": "2026-07-12T10:31:25.473Z",
+      "action": "Reservation Creation",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "New reservation BK-5456 created for guest Bijay mohanty (Room Booking). Total: ₹10,080",
+      "icon": "create"
+    }
+  ],
   "serviceRequests": [],
   "tourismInquiries": [],
   "feedbacks": []
 }
-

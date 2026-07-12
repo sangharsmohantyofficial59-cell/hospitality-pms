@@ -1,6 +1,10 @@
 import nodemailer from "nodemailer";
+import { buildPremiumBookingArtifacts } from "./premiumBookingArtifacts";
 // NOTE: Twilio WhatsApp removed in Sprint 7 Module 1.
+
+
 // All WhatsApp notifications now route through src/services/whatsappService.ts (Meta Cloud API).
+
 
 export interface SentMessageLog {
   id: string;
@@ -67,8 +71,10 @@ export async function sendEmail({
   event,
   subject,
   htmlBody,
-  textBody
+  textBody,
+  attachments
 }: {
+
   bookingId: string;
   guestName: string;
   toEmail: string;
@@ -76,9 +82,11 @@ export async function sendEmail({
   subject: string;
   htmlBody: string;
   textBody: string;
+  attachments?: Array<{ filename: string; content: Buffer | string; contentType?: string }>;
 }): Promise<SentMessageLog> {
   const sentAt = new Date().toISOString();
   const id = `MSG-${Date.now().toString().slice(-4)}-E`;
+
 
   const transporter = await getTransporter();
   // Use config-driven sender identity. Keep SMTP_FROM as override.
@@ -92,8 +100,14 @@ export async function sendEmail({
         to: toEmail,
         subject,
         text: textBody,
-        html: htmlBody
+        html: htmlBody,
+        attachments: attachments?.map(a => ({
+          filename: a.filename,
+          content: a.content,
+          contentType: a.contentType
+        }))
       });
+
 
       const fromStr = info.envelope?.from;
       const hostStr = (transporter.options as any)?.host;
@@ -115,6 +129,11 @@ export async function sendEmail({
         etherealUrl,
         sentAt
       };
+      
+      if (attachments?.length) {
+        console.log(`[Email Service] Attachments included for booking ${bookingId}: ${attachments.map(a => a.filename).join(", ")}`);
+      }
+
       
       messageLogs.unshift(log);
       console.log(`[Email Service] successfully delivered mail for ${bookingId} to ${toEmail}. ID: ${info.messageId}`);
@@ -399,7 +418,77 @@ export async function sendNotificationEvents(
 
   console.log(`[NotificationService] Initiating multi-channel dispatch logs for Event: ${event} -> Booking: ${booking.id}`);
 
-  // 1. Dispatch Email asynchronously (in parallel or sequentially with graceful catch)
+  // Attach premium artifacts only for booking_confirmation (fail-safe per-artifact)
+  let attachments: Array<{ filename: string; content: Buffer | string; contentType?: string }> | undefined;
+
+  if (event === "booking_confirmation") {
+    const roomLabel = (booking.roomId ? `Room ${booking.roomId}` : undefined) as string | undefined;
+    const paymentStatus = booking.paymentStatus ?? "Pending";
+    const guestCount = booking.numberOfGuests ?? 1;
+
+    // Fail-safe: generate each artifact independently.
+    let pdfBufOrEmpty: Buffer = Buffer.from("");
+    let icsBufOrEmpty: Buffer = Buffer.from("");
+
+    try {
+      const artifacts = await buildPremiumBookingArtifacts({
+        guestName: guest.name,
+        bookingId: booking.id,
+        roomTypeName,
+        roomLabel,
+        numberOfGuests: guestCount,
+        checkInDate: booking.checkInDate,
+        checkOutDate: booking.checkOutDate,
+        paymentStatus,
+      });
+
+      const pdf = artifacts.attachments.find((x) => x.filename.endsWith(".pdf"));
+      if (pdf && Buffer.isBuffer(pdf.content)) pdfBufOrEmpty = pdf.content;
+      // If pdf not present, leave empty.
+    } catch (err) {
+      console.error(`[NotificationService] PDF voucher generation failed for ${booking.id}:`, err);
+    }
+
+    try {
+      const artifacts = await buildPremiumBookingArtifacts({
+        guestName: guest.name,
+        bookingId: booking.id,
+        roomTypeName,
+        roomLabel,
+        numberOfGuests: guestCount,
+        checkInDate: booking.checkInDate,
+        checkOutDate: booking.checkOutDate,
+        paymentStatus,
+      });
+
+      const ics = artifacts.attachments.find((x) => x.filename.endsWith(".ics"));
+      if (ics && Buffer.isBuffer(ics.content)) icsBufOrEmpty = ics.content;
+    } catch (err) {
+      console.error(`[NotificationService] booking.ics generation failed for ${booking.id}:`, err);
+    }
+
+
+    const finalAttachments: Array<{ filename: string; content: Buffer | string; contentType?: string }> = [];
+    if (pdfBufOrEmpty && Buffer.isBuffer(pdfBufOrEmpty) && pdfBufOrEmpty.length > 0) {
+      finalAttachments.push({
+        filename: `Booking-Voucher-${booking.id}.pdf`,
+        content: pdfBufOrEmpty,
+        contentType: "application/pdf",
+      });
+    }
+    if (icsBufOrEmpty && Buffer.isBuffer(icsBufOrEmpty) && icsBufOrEmpty.length > 0) {
+      finalAttachments.push({
+        filename: `Booking-${booking.id}.ics`,
+        content: icsBufOrEmpty,
+        contentType: "text/calendar; charset=utf-8",
+      });
+    }
+
+
+    if (finalAttachments.length) attachments = finalAttachments;
+  }
+
+  // 1. Dispatch Email (must always happen; attachments are best-effort)
   await sendEmail({
     bookingId: booking.id,
     guestName: guest.name,
@@ -407,8 +496,10 @@ export async function sendNotificationEvents(
     event,
     subject,
     textBody,
-    htmlBody
+    htmlBody,
+    attachments,
   });
+
 
   // 2. WhatsApp dispatch is handled separately in server.ts via whatsappService.ts (Meta Cloud API).
   //    Calling sendWhatsApp() here has been removed as part of Sprint 7 Module 1 Twilio retirement.

@@ -604,7 +604,12 @@ export default function CustomerWebsite({
   };
 
   // Payment confirmation completion
-  const submitBookingPayment = async () => {
+  const submitBookingPayment = async (e?: React.MouseEvent<HTMLButtonElement> | React.FormEvent) => {
+    // Hard guarantee: never allow any click/form submit to refresh/navigate.
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
     setIsPaying(true);
     try {
@@ -1031,6 +1036,7 @@ export default function CustomerWebsite({
               <span className="font-mono text-xs tracking-wider text-amber-600 dark:text-amber-400 uppercase font-bold">Visual Splendor</span>
               <h2 className="text-3xl font-bold font-sans text-slate-900 dark:text-white mt-2">{hotelConfig.info.name} Gallery</h2>
               <p className="text-slate-500 dark:text-slate-400 text-xs mt-2">Glimpses of {hotelConfig.info.name} accommodations, services, and local attractions.</p>
+
             </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1102,7 +1108,8 @@ export default function CustomerWebsite({
                         />
                       </div>
                       <div className="mt-4 p-5 bg-slate-900/60 border border-slate-800 rounded-2xl">
-                        <h4 className="font-sans font-bold text-white text-base">Niladri Ayurvedic Spa</h4>
+                        <h4 className="font-sans font-bold text-white text-base">{hotelConfig.info.name} Ayurvedic Spa</h4>
+
                         <p className="text-slate-400 text-xs mt-2 leading-relaxed">Experience holistic healing through ancient Ayurvedic traditions. Our certified therapists offer personalised treatments using organic, locally-sourced herbs and oils.</p>
                         <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-400">
                           <span>✓ Swedish Massage</span>
@@ -1134,9 +1141,10 @@ export default function CustomerWebsite({
                 <h3 className="text-3xl font-bold font-sans mt-4 max-w-md tracking-tight">
                   Promote your family peace or spiritual journey
                 </h3>
-                <p className="text-slate-900 text-sm mt-3 leading-relaxed">
-                  Enjoy custom itineraries combined with verified local experiences, divine chariot darshan seats, and direct sea-view double sun decks at Niladri Shore. Perfect for family temple vacations and seaside tranquility.
+                  <p className="text-slate-900 text-sm mt-3 leading-relaxed">
+                  Enjoy custom itineraries combined with verified local experiences, divine chariot darshan seats, and direct sea-view double sun decks at {hotelConfig.info.name}. Perfect for family temple vacations and seaside tranquility.
                 </p>
+
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
                 <button
@@ -1196,7 +1204,7 @@ export default function CustomerWebsite({
               Puri Travel Companion & Guide
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 leading-relaxed">
-              Plan your travel perfectly. Below are curated routes, direct ocean distances from Niladri Shore, and helpful traditional customs to assist your tour planning.
+Plan your travel perfectly. Below are curated routes, direct ocean distances from the property shoreline, and helpful traditional customs to assist your tour planning.
             </p>
           </div>
 
@@ -1206,7 +1214,7 @@ export default function CustomerWebsite({
               <Compass className="w-5 h-5 text-amber-400" />
               <div>
                 <h3 className="font-bold text-sm tracking-tight">Resort Proximity Chart</h3>
-                <p className="text-[10px] text-slate-400 font-mono font-bold">DIRECT DISTANCE FROM NILADRI SHORE BEACHFRONT</p>
+DIRECT DISTANCE FROM PROPERTY SHORELINE
               </div>
             </div>
 
@@ -2158,7 +2166,7 @@ export default function CustomerWebsite({
                         required
                         value={transportDrop}
                         onChange={(e) => setTransportDrop(e.target.value)}
-                        placeholder="E.g., Niladri Shore Resort Front Desk Lobby"
+placeholder={`E.g., ${hotelConfig.contact.address} / Front Desk Lobby` }
                         className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100"
                       />
                     </div>
@@ -2613,7 +2621,7 @@ export default function CustomerWebsite({
           <div className="mb-12 text-center">
             <span className="font-mono text-xs tracking-wider text-amber-600 dark:text-amber-400 uppercase font-bold">Gourmet Pleasures</span>
             <h1 className="text-4xl font-serif font-normal text-slate-900 dark:text-white mt-2 tracking-tight">Fine Culinary Encounters</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto mt-2">Savor high-end satvik temple recipes, rich coastal seafood grills, and custom curated sunset drinks crafted by Niladri Shore's master chefs.</p>
+our master chefs.
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -2688,7 +2696,7 @@ export default function CustomerWebsite({
           <div className="mb-12 text-center">
             <span className="font-mono text-xs tracking-wider text-amber-600 dark:text-amber-400 uppercase font-bold">Visual Grandeur</span>
             <h1 className="text-4xl font-serif font-normal text-slate-900 dark:text-white mt-2 tracking-tight">Our Resort Portfolio</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto mt-2">Step inside a breathtaking preview of Niladri Shore Resort's luxury beachfront landscapes, elegant royal suites, and premium amenities.</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto mt-2">Step inside a breathtaking preview of {hotelConfig.info.name}'s luxury beachfront landscapes, elegant royal suites, and premium amenities.</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -3120,8 +3128,9 @@ export default function CustomerWebsite({
         <div id="customer-contact-tab" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
           <div className="mb-12 text-center">
             <span className="font-mono text-xs tracking-wider text-amber-600 dark:text-amber-400 uppercase font-bold">Reach Out</span>
-            <h1 className="text-4xl font-serif font-normal text-slate-900 dark:text-white mt-2 tracking-tight">Connect with Niladri Shore</h1>
+            <h1 className="text-4xl font-serif font-normal text-slate-900 dark:text-white mt-2 tracking-tight">Connect with {hotelConfig.info.name}</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto mt-2">Whether planning a grand pilgrimage, ocean wedding, or corporate block, our dedicated staff is ready to help.</p>
+
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -3201,15 +3210,18 @@ export default function CustomerWebsite({
               <div className="bg-slate-100 dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 space-y-6">
                 <div>
                   <h4 className="text-xs font-mono font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">RESORT LOCATION</h4>
-                  <p className="text-sm font-semibold mt-1.5 text-slate-800 dark:text-slate-200">Niladri Shore Beachfront, Golden Beach Sector 4, Puri, Odisha, 752001, India</p>
+                  <p className="text-sm font-semibold mt-1.5 text-slate-800 dark:text-slate-200">{hotelConfig.contact.address}</p>
+
                 </div>
                 <div>
                   <h4 className="text-xs font-mono font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">DIRECT HOTLINES</h4>
-                  <p className="text-sm font-semibold mt-1.5 text-slate-800 dark:text-slate-200">Main Office: +91 6752 234567<br />Luxury Concierge: +91 98765 43210</p>
+                  <p className="text-sm font-semibold mt-1.5 text-slate-800 dark:text-slate-200">{hotelConfig.contact.phone}</p>
+
                 </div>
                 <div>
                   <h4 className="text-xs font-mono font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">EMAIL</h4>
-                  <p className="text-sm font-semibold mt-1.5 text-slate-800 dark:text-slate-200">reservations@niladrishoreresort.com</p>
+                  <p className="text-sm font-semibold mt-1.5 text-slate-800 dark:text-slate-200">{hotelConfig.contact.email}</p>
+
                 </div>
               </div>
 
@@ -3225,9 +3237,9 @@ export default function CustomerWebsite({
                 </div>
                 <div className="relative z-10 px-6">
                   <MapPin className="w-8 h-8 text-amber-500 mx-auto mb-3 animate-bounce" />
-                  <span className="font-mono text-[10px] text-amber-405 font-bold uppercase block tracking-widest">NILADRI COORDINATES</span>
+PROPERTY COORDINATES
                   <p className="text-sm font-semibold mt-1 text-white">19.7982° N, 85.8249° E</p>
-                  <p className="text-[11px] text-slate-400 mt-1 font-sans">Located directly on Golden Beach (Odisha Tourism Sector)</p>
+Located directly on the local coastline (Odisha Tourism Sector)
                 </div>
               </div>
             </div>
@@ -3247,7 +3259,7 @@ export default function CustomerWebsite({
                 </div>
                 <div>
                   <span className="text-xs text-stone-400 lowercase">paying to</span>
-                  <p className="text-sm font-bold text-white tracking-tight -mt-0.5">Niladri Shore Resort</p>
+                <p className="text-sm font-bold text-white tracking-tight -mt-0.5">{hotelConfig.info.name}</p>
                 </div>
               </div>
               <div className="text-right">
