@@ -286,6 +286,13 @@
       "email": "asdasdasd",
       "phone": "90785345535",
       "createdAt": "2026-07-12T17:54:48.598Z"
+    },
+    {
+      "id": "GUST-1403",
+      "name": "Sanghars",
+      "email": "sadasdasd",
+      "phone": "9078938019",
+      "createdAt": "2026-07-12T18:28:31.403Z"
     }
   ],
   "bookings": [
@@ -535,6 +542,54 @@
           "rate": 4500
         }
       ]
+    },
+    {
+      "id": "BK-1403",
+      "guestId": "GUST-1403",
+      "roomId": null,
+      "roomTypeId": "executive_suite",
+      "checkInDate": "2026-07-13",
+      "checkOutDate": "2026-07-15",
+      "numberOfGuests": 2,
+      "totalPrice": 10080,
+      "source": "Website",
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
+      "createdAt": "2026-07-12T18:28:31.403Z",
+      "bookingType": "Room Booking",
+      "discountAmount": 0,
+      "discountPercent": 0,
+      "gstRate": 12,
+      "customServiceLines": [],
+      "transport": {
+        "vehicleType": "",
+        "pickupAddress": "",
+        "dropAddress": "",
+        "scheduleTime": "",
+        "status": "Pending"
+      },
+      "cancellationReason": "",
+      "paymentOption": "Advance",
+      "advancePaid": 5040,
+      "pendingBalance": 5040,
+      "auditLogs": [
+        {
+          "timestamp": "2026-07-12T18:28:31.403Z",
+          "action": "Booking Created",
+          "user": "Sanghars",
+          "notes": "Created via channel: Website - Category: executive_suite (Pay Advance Selected)"
+        }
+      ],
+      "bookingRooms": [
+        {
+          "roomTypeId": "executive_suite",
+          "roomId": null,
+          "adults": 2,
+          "children": 0,
+          "rate": 9800
+        }
+      ]
     }
   ],
   "payments": [
@@ -582,9 +637,34 @@
       "status": "Paid",
       "transactionId": "pay_rzp_888240",
       "createdAt": "2026-07-12T17:54:48.618Z"
+    },
+    {
+      "id": "PAY-1435",
+      "bookingId": "BK-1403",
+      "amount": 5040,
+      "method": "Razorpay",
+      "status": "Paid",
+      "transactionId": "pay_rzp_911025",
+      "createdAt": "2026-07-12T18:28:31.435Z"
     }
   ],
   "notifications": [
+    {
+      "id": "NT-1783880911435-bk",
+      "type": "new_booking",
+      "title": "New Reservation (Website)",
+      "message": "Sanghars booked a room for 2026-07-13 to 2026-07-15.",
+      "isRead": false,
+      "createdAt": "2026-07-12T18:28:31.435Z"
+    },
+    {
+      "id": "NT-1783880911435-pay",
+      "type": "payment_confirmation",
+      "title": "Payment Confirmed",
+      "message": "Razorpay transaction of ₹5,040 received for booking BK-1403.",
+      "isRead": false,
+      "createdAt": "2026-07-12T18:28:31.435Z"
+    },
     {
       "id": "NT-1783878888618-bk",
       "type": "new_booking",
@@ -668,6 +748,30 @@
   ],
   "documents": [],
   "messageLogs": [
+    {
+      "id": "MSG-1583-E",
+      "bookingId": "BK-1403",
+      "guestName": "Sanghars",
+      "recipient": "sadasdasd",
+      "type": "email",
+      "event": "booking_confirmation",
+      "subject": "Reservation Confirmed: Your Stay at Serene Bay Resort & Spa (BK-1403)",
+      "body": "Dear Sanghars,\n\nYour reservation at Serene Bay Resort & Spa has been successfully guaranteed.\n\n\nBooking Summary Details:\n- Booking Reference: BK-1403\n- Reserved Category: Executive Suite\n- Schedule Period: 2026-07-13 to 2026-07-15\n- Guests Count: 2 Persons\n- Total Paid Subtotal: ₹10,080 (via Razorpay Guaranteed)\n\nNext Step: Express Digital Pre-Arrival Check-In:\nPlease complete E-Check-In instantly by uploading your Government Photo ID scanned proof at our virtual portal prior to your checkin hour. This will guarantee immediate key release at our lobby.\nAccess Portal: https://hospitality-pms-production.up.railway.app/guest?bookingId=BK-1403\n\nWarm regards,\nFront Desk Reception\nGrand Crest Kolkata\nbookings@grandcrestkolkata.com\n+91 (33) 2200-9900",
+      "status": "Failed",
+      "sentAt": "2026-07-12T18:28:31.583Z"
+    },
+    {
+      "id": "MSG-11447-WA",
+      "bookingId": "BK-1403",
+      "guestName": "Sanghars",
+      "recipient": "+919078938019",
+      "type": "whatsapp",
+      "event": "booking_confirmation",
+      "subject": "WhatsApp Booking Confirmation (Simulated)",
+      "body": "\n┌────────────────────────────────────────────────────┐\n│  📲  WhatsApp Booking Confirmation [SIMULATED]     │\n└────────────────────────────────────────────────────┘\n  Hotel       : Serene Bay Resort & Spa\n  Guest       : Sanghars\n  Booking ID  : BK-1403\n  Room Type   : Executive Suite\n  Check-In    : 2026-07-13\n  Check-Out   : 2026-07-15\n  Guests      : 2\n  Payment     : Paid\n  Phone       : +91-6752-223344\n  Address     : Plot 14, Marina Beach Road, Sector 9, Puri, Odisha 752002\n  Maps        : https://maps.google.com/?q=19.8135,85.8312\n└────────────────────────────────────────────────────┘\n",
+      "status": "Simulated",
+      "sentAt": "2026-07-12T18:28:31.448Z"
+    },
     {
       "id": "MSG-8747-E",
       "bookingId": "BK-8598",
@@ -794,6 +898,14 @@
     }
   ],
   "activityLogs": [
+    {
+      "id": "ACT-1783880911435-zt9bnwpu",
+      "timestamp": "2026-07-12T18:28:31.435Z",
+      "action": "Reservation Creation",
+      "user": "Rajesh Kumar (Front Desk)",
+      "details": "New reservation BK-1403 created for guest Sanghars (Room Booking). Total: ₹10,080 [Advance Paid: ₹5,040, Balance: ₹5,040]",
+      "icon": "create"
+    },
     {
       "id": "ACT-1783878888618-nwjm64m2",
       "timestamp": "2026-07-12T17:54:48.618Z",

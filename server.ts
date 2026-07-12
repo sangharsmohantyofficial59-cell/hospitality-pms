@@ -17,6 +17,8 @@ import { ActivityLogService } from "./server/services/ActivityLogService";
 import { GuestService } from "./server/services/GuestService";
 import { RoomService } from "./server/services/RoomService";
 import { BookingService } from "./server/services/BookingService";
+import { cancelBooking } from "./server/services/BookingCancellationService";
+
 import { PaymentService } from "./server/services/PaymentService";
 
 // --- [Prisma Migration - Booking Creation Only] ---
@@ -1265,19 +1267,26 @@ initialRoomTypes: [...HOTEL_ROOM_TYPES] as any[]
       }
 
       if (status === BookingStatus.CANCELLED) {
-        if (activeRoomId) {
-          RoomService.releaseRoom(rooms, activeRoomId);
+        const result = await cancelBooking({
+          bookingId,
+          reason: {
+            reason: req.body.reason || req.body.cancellationReason || "Cancelled",
+            reasonDetails: req.body.reasonDetails
+          },
+          operatorLabel: req.body.operatorName || req.body.operator || undefined,
+          rooms,
+          guests,
+          bookings,
+          payments,
+          notifications,
+          activityLogs,
+          initialRoomTypes: INITIAL_ROOMS_TYPES
+        } as any);
+        if (!result.success) {
+          return res.status(400).json({ error: result.error || "Cancellation failed" });
         }
-        if (booking.bookingRooms) {
-          booking.bookingRooms.forEach((r: any) => {
-            if (r.roomId) {
-              RoomService.releaseRoom(rooms, r.roomId);
-            }
-            r.roomId = null;
-          });
-        }
-        booking.roomId = null;
       }
+
     }
 
     saveState();

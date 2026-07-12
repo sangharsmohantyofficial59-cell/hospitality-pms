@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { 
   Sparkles, Coffee, Clock, FileText, CheckCircle2, Search, Download, 
   Star, HelpCircle, MapPin, Send, AlertTriangle, Calendar, UserCheck, CreditCard, ChevronRight, Check, ArrowRight, ShieldCheck, HelpCircle as HelpIcon, ArrowUpCircle, BadgePercent, CheckCircle, Flame, Utensils, Car, Compass, User
 } from "lucide-react";
 import { Booking, Guest, RoomType, Room } from "../types";
+import CancelBookingDialog from "./booking/CancelBookingDialog";
 import { handleExportInvoiceToPDF } from "./BookingManagement";
 import { hotelConfig } from "../config/hotelConfig";
 import { BRANDING } from "../config/hotel/branding";
