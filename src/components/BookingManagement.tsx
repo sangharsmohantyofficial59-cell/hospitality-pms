@@ -263,6 +263,12 @@ interface BookingManagementProps {
   roomTypes: RoomType[];
   onNewBooking: (formData: any) => Promise<any>;
   onUpdateBooking: (id: string, payload: any) => Promise<any>;
+  onCancelBooking?: (
+    bookingId: string,
+    reason: string,
+    reasonDetails?: string,
+    operatorName?: string
+  ) => Promise<any>;
   messageLogs?: any[];
   onNavigateToTab?: (tabId: string) => void;
 }
@@ -274,6 +280,7 @@ export default function BookingManagement({
   roomTypes,
   onNewBooking,
   onUpdateBooking,
+  onCancelBooking,
   messageLogs,
   onNavigateToTab
 }: BookingManagementProps) {
@@ -595,6 +602,24 @@ Remarks: ${mNotes}`;
   // Change booking status triggers
   const handleStatusUpdate = async (bookingId: string, status: BookingStatus) => {
     try {
+      if (status === BookingStatus.CANCELLED) {
+        const reason = prompt("Please enter the cancellation reason for auditing:");
+        if (reason === null) return; // cancelled prompt
+        const cleanReason = reason.trim() || "Admin Cancelled";
+
+        if (onCancelBooking) {
+          const res = await onCancelBooking(bookingId, cleanReason, undefined, "Front Desk Staff");
+          if (!res.success) {
+            alert(`Cancellation failed: ${res.error || "Unknown error"}`);
+            return;
+          }
+        } else {
+          await onUpdateBooking(bookingId, { status });
+        }
+        alert("⚠ Reservation has been successfully cancelled & logged.");
+        return;
+      }
+
       await onUpdateBooking(bookingId, { status });
       if (status === BookingStatus.CHECKED_OUT && onNavigateToTab) {
         if (confirm("✓ Guest Checked-Out successfully!\n\nNavigate to the Billing Cockpit & GST Queue to apply optional discounts and close the bill?")) {
@@ -1738,25 +1763,40 @@ Remarks: ${mNotes}`;
             return;
           }
 
-          const updatedLogs = [
-            ...currentLogs,
-            { timestamp: new Date().toISOString(), action: "Reservation Cancelled", user: "Front Desk Staff", notes: `Admin Cancel Event: ${cancReason}` }
-          ];
+          try {
+            let res;
+            if (onCancelBooking) {
+              res = await onCancelBooking(b.id, cancReason, undefined, "Front Desk Staff");
+            } else {
+              const updatedLogs = [
+                ...currentLogs,
+                { timestamp: new Date().toISOString(), action: "Reservation Cancelled", user: "Front Desk Staff", notes: `Admin Cancel Event: ${cancReason}` }
+              ];
+              res = await onUpdateBooking(b.id, {
+                status: BookingStatus.CANCELLED,
+                cancellationReason: cancReason,
+                auditLogs: updatedLogs
+              });
+            }
 
-          await onUpdateBooking(b.id, {
-            status: BookingStatus.CANCELLED,
-            cancellationReason: cancReason,
-            auditLogs: updatedLogs
-          });
-
-          setSelectedBooking({
-            ...b,
-            status: BookingStatus.CANCELLED,
-            cancellationReason: cancReason,
-            auditLogs: updatedLogs
-          });
-
-          alert("⚠ Reservation has been successfully cancelled & logged.");
+            if (res && res.success) {
+              const updatedBooking = res.booking || {
+                ...b,
+                status: BookingStatus.CANCELLED,
+                cancellationReason: cancReason,
+                auditLogs: [
+                  ...currentLogs,
+                  { timestamp: new Date().toISOString(), action: "Reservation Cancelled", user: "Front Desk Staff", notes: `Cancellation reason: ${cancReason}` }
+                ]
+              };
+              setSelectedBooking(updatedBooking);
+              alert("⚠ Reservation has been successfully cancelled & logged.");
+            } else {
+              alert("Cancellation failed: " + (res?.error || "Unknown error"));
+            }
+          } catch (err: any) {
+            alert("Cancellation error: " + (err?.message || err));
+          }
         };
 
         return (

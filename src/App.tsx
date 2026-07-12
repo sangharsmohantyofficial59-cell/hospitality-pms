@@ -30,6 +30,8 @@ import LiveServiceCenter from "./components/LiveServiceCenter";
 import { Room, RoomStatus, Booking, Guest, Payment, Notification, UploadedDocument, RoomType } from "./types";
 import { Hotel, KeyRound, ArrowRight, Library, RefreshCw, X, FolderGit, Layout, Database, Bell, Check } from "lucide-react";
 import { api } from "./services/api";
+import { cancelBooking } from "./services/bookingCancellationService";
+import { hotelConfig } from "./config/hotelConfig";
 import { AUTH_CONFIG, type AuthRole } from "./config/authConfig";
 import { ROUTES, STAFF_SESSION_KEYS, USER_ROLES, STAFF_TAB_IDS } from "./config/constants";
 
@@ -206,6 +208,46 @@ export default function App() {
       return { success: false, error: data?.error };
     } catch (err) {
       return { success: false, error: "Network update error" };
+    }
+  };
+
+  const handleCancelBooking = async (
+    bookingId: string,
+    reason: string,
+    reasonDetails?: string,
+    operatorName?: string
+  ) => {
+    try {
+      const data = await cancelBooking({ bookingId, reason, reasonDetails, operatorName });
+      if (data?.success) {
+        await fetchState();
+        return data;
+      }
+      return { success: false, error: data?.error };
+    } catch (err: any) {
+      return { success: false, error: err?.message || "Network cancellation error" };
+    }
+  };
+
+  const handleCancelBookingFromGuest = async (
+    bookingId: string,
+    reason: string,
+    reasonDetails?: string
+  ) => {
+    try {
+      const data = await cancelBooking({
+        bookingId,
+        reason,
+        reasonDetails,
+        operatorName: "Guest (Self Service)"
+      });
+      if (data?.success && data.booking) {
+        setBookings(prev => prev.map(b => b.id === data.booking.id ? (data.booking as Booking) : b));
+        return data;
+      }
+      return { success: false, error: data?.error };
+    } catch (err: any) {
+      return { success: false, error: err?.message || "Network cancellation error" };
     }
   };
 
@@ -479,6 +521,7 @@ export default function App() {
             onAddFeedback={handleAddFeedback}
             onUploadCheckin={handleUploadCheckin}
             onRoomUpgrade={handleRoomUpgrade}
+            onCancelBooking={handleCancelBookingFromGuest}
           />
           <CustomerFooter />
         </div>
@@ -686,6 +729,7 @@ export default function App() {
                   roomTypes={roomTypes}
                   onNewBooking={handleNewBooking}
                   onUpdateBooking={handleUpdateBooking}
+                  onCancelBooking={handleCancelBooking}
                   onNavigateToTab={setAdminTab}
                 />
               )}

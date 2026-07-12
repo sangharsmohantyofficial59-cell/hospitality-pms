@@ -304,9 +304,9 @@
       "checkInDate": "2026-07-13",
       "checkOutDate": "2026-07-15",
       "numberOfGuests": 2,
-      "totalPrice": 10080,
+      "totalPrice": 21952,
       "source": "Website",
-      "status": "Confirmed",
+      "status": "Cancelled",
       "paymentStatus": "Paid",
       "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
       "createdAt": "2026-07-12T10:31:25.456Z",
@@ -322,7 +322,7 @@
         "scheduleTime": "",
         "status": "Pending"
       },
-      "cancellationReason": "",
+      "cancellationReason": "Plans Changed",
       "paymentOption": "Full",
       "advancePaid": 10080,
       "pendingBalance": 0,
@@ -349,7 +349,9 @@
           "children": 0,
           "rate": 7500
         }
-      ]
+      ],
+      "reason": "Plans Changed",
+      "operatorName": "Guest (Self Service)"
     },
     {
       "id": "BK-9242",
@@ -551,9 +553,9 @@
       "checkInDate": "2026-07-13",
       "checkOutDate": "2026-07-15",
       "numberOfGuests": 2,
-      "totalPrice": 10080,
+      "totalPrice": 21952,
       "source": "Website",
-      "status": "Confirmed",
+      "status": "Cancelled",
       "paymentStatus": "Paid",
       "notes": "[ROOM RESERVATION]\nSpecial Requests: ",
       "createdAt": "2026-07-12T18:28:31.403Z",
@@ -569,7 +571,7 @@
         "scheduleTime": "",
         "status": "Pending"
       },
-      "cancellationReason": "",
+      "cancellationReason": "Plans Changed",
       "paymentOption": "Advance",
       "advancePaid": 5040,
       "pendingBalance": 5040,
@@ -589,7 +591,9 @@
           "children": 0,
           "rate": 9800
         }
-      ]
+      ],
+      "reason": "Plans Changed",
+      "operatorName": "Guest (Self Service)"
     }
   ],
   "payments": [
@@ -646,9 +650,55 @@
       "status": "Paid",
       "transactionId": "pay_rzp_911025",
       "createdAt": "2026-07-12T18:28:31.435Z"
+    },
+    {
+      "id": "PAY-RC-6391-1403",
+      "bookingId": "BK-1403",
+      "amount": 5040,
+      "method": "UPI",
+      "status": "Paid",
+      "transactionId": "pay_settle_BK-1403",
+      "createdAt": "2026-07-12T19:25:26.390Z",
+      "notes": "Checkout Settlement Revenue: Settle and Close Folio BK-1403"
+    },
+    {
+      "id": "PAY-0712",
+      "bookingId": "BK-5456",
+      "amount": 11872,
+      "method": "UPI",
+      "status": "Paid",
+      "transactionId": "pay_settle_1783884520712",
+      "createdAt": "2026-07-12T19:28:40.712Z",
+      "notes": "Checkout Settlement Revenue: Settle and Close Folio BK-5456"
+    },
+    {
+      "id": "PAY-8604",
+      "bookingId": "BK-1403",
+      "amount": 11872,
+      "method": "UPI",
+      "status": "Paid",
+      "transactionId": "pay_settle_1783884668604",
+      "createdAt": "2026-07-12T19:31:08.604Z",
+      "notes": "Checkout Settlement Revenue: Settle and Close Folio BK-1403"
     }
   ],
   "notifications": [
+    {
+      "id": "NT-1783884668604-settle",
+      "type": "payment_confirmation",
+      "title": "Settle and Close Payment Recorded",
+      "message": "UPI checkout settlement of ₹11,872 received for booking BK-1403.",
+      "isRead": false,
+      "createdAt": "2026-07-12T19:31:08.604Z"
+    },
+    {
+      "id": "NT-1783884520712-settle",
+      "type": "payment_confirmation",
+      "title": "Settle and Close Payment Recorded",
+      "message": "UPI checkout settlement of ₹11,872 received for booking BK-5456.",
+      "isRead": false,
+      "createdAt": "2026-07-12T19:28:40.756Z"
+    },
     {
       "id": "NT-1783880911435-bk",
       "type": "new_booking",

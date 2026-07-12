@@ -868,7 +868,7 @@ initialRoomTypes: [...HOTEL_ROOM_TYPES] as any[]
   });
 
   // Edit booking details (Admin updates, check-in, check-out, assignment, cancellation)
-  app.put("/api/pms/bookings/:id", (req, res) => {
+  app.put("/api/pms/bookings/:id", async (req, res) => {
     const bookingId = req.params.id;
     const { status, roomId, paymentStatus, notes } = req.body;
 
@@ -1280,7 +1280,7 @@ initialRoomTypes: [...HOTEL_ROOM_TYPES] as any[]
           payments,
           notifications,
           activityLogs,
-          initialRoomTypes: INITIAL_ROOMS_TYPES
+          initialRoomTypes: INITIAL_ROOM_TYPES
         } as any);
         if (!result.success) {
           return res.status(400).json({ error: result.error || "Cancellation failed" });

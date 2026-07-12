@@ -30,6 +30,7 @@ interface UnifiedGuestPortalProps {
   onAddFeedback: (payload: any) => Promise<void>;
   onUploadCheckin: (bookingId: string, payload: any) => Promise<any>;
   onRoomUpgrade: (bookingId: string, payload: any) => Promise<any>;
+  onCancelBooking?: (bookingId: string, reason: string, reasonDetails?: string) => Promise<any>;
 }
 
 export default function UnifiedGuestPortal({
@@ -44,7 +45,8 @@ export default function UnifiedGuestPortal({
   onAddInquiry,
   onAddFeedback,
   onUploadCheckin,
-  onRoomUpgrade
+  onRoomUpgrade,
+  onCancelBooking
 }: UnifiedGuestPortalProps) {
   
   // Guest authentication states
@@ -68,6 +70,7 @@ export default function UnifiedGuestPortal({
   const [selectedBookingId, setSelectedBookingId] = useState<string>("");
   const [customRoom, setCustomRoom] = useState<string>("101");
   const [customGuestName, setCustomGuestName] = useState<string>("John Doe");
+  const [cancelDialogOpen, setCancelDialogOpen] = useState<boolean>(false);
 
   // Pre-populate login form using URL query parameters if present
   React.useEffect(() => {
@@ -1215,6 +1218,20 @@ export default function UnifiedGuestPortal({
                     </div>
                   </div>
                 )}
+
+                {activeBooking.status === "Confirmed" && (
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-850 flex justify-between items-center">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Need to cancel this reservation?
+                    </span>
+                    <button
+                      onClick={() => setCancelDialogOpen(true)}
+                      className="px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/20 text-red-650 dark:text-red-450 rounded-xl text-xs font-bold transition-all cursor-pointer border border-red-200 dark:border-red-900/30"
+                    >
+                      Cancel Booking
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <BookingLookupPortal
@@ -1764,6 +1781,22 @@ export default function UnifiedGuestPortal({
         )}
 
       </div>
+
+      {activeBooking && (
+        <CancelBookingDialog
+          open={cancelDialogOpen}
+          booking={activeBooking}
+          roomType={activeRoomType}
+          currentUserLabel="Guest (Self Service)"
+          onClose={() => setCancelDialogOpen(false)}
+          onConfirmCancel={async (payload) => {
+            if (onCancelBooking) {
+              await onCancelBooking(payload.bookingId, payload.reason, payload.reasonDetails);
+            }
+            setCancelDialogOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
